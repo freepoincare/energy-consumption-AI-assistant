@@ -1,0 +1,227 @@
+[Request]
+
+Continue the AI Native project from STEP 1.
+
+IMPORTANT:
+Only implement STEP 2. Do not implement later steps.
+
+For STEP 2, I want to prepare my Seoul historical daily temperature data for the AI assistant.
+
+My dataset contains Seoul daily temperature data with:
+
+* date
+* tavg
+* tmin
+* tmax
+
+The dataset covers historical Seoul temperatures from approximately 1907 to 2026, with missing observations during the Korean War period.
+
+First inspect the available data files and determine their actual filename, columns, format, and location. Do not assume the filename.
+
+Then:
+
+1. Identify the raw dataset.
+2. Create an appropriate processed-data workflow.
+3. Validate:
+
+   * date format
+   * missing values
+   * duplicate dates
+   * numeric columns
+4. Create useful derived fields if appropriate:
+
+   * year
+   * month
+   * day_of_year
+   * season
+5. Create a data-analysis module that can calculate at least:
+
+   * period
+   * number of records
+   * average temperature
+   * minimum temperature
+   * maximum temperature
+   * recent average
+   * basic long-term trend
+6. Create a reusable summary function that returns structured Python data suitable for later conversion to JSON.
+7. Do not connect this summary to Firestore yet.
+8. Do not connect this summary to OpenAI yet.
+9. Do not build the frontend yet.
+
+Use pandas where appropriate.
+
+After completing STEP 2:
+
+1. Show me the data-processing flow.
+2. Explain every important transformation.
+3. Show an example of the generated summary.
+4. Explain how this summary will eventually be used by the AI.
+5. Tell me what files you created or modified.
+6. Stop and wait for my instruction.
+
+---
+
+[Request]
+
+Continue the AI Native project from STEP 1.
+
+IMPORTANT:
+Only implement STEP 2. Do not implement later steps.
+
+For STEP 2, prepare the Seoul historical daily temperature dataset and reproduce the key analytical results from my existing Seoul Temperature Time Series Analysis report.
+
+The dataset contains:
+
+* date
+* tavg
+* tmin
+* tmax
+
+The dataset covers Seoul historical daily temperatures from approximately 1907-10-01 to 2026-08-19, with a long observation gap during the Korean War period (1950-09-01 to 1953-11-30).
+
+First inspect the available dataset and determine its actual filename, columns, format, and location. Do not assume the filename.
+
+## A. Data preparation
+
+Validate:
+
+* date format
+* missing values
+* outliers
+* duplicate dates
+* numeric columns
+* date continuity
+
+Create useful derived fields:
+
+* year
+* month
+* day
+* day_of_year
+* season_year (for example: Dec 2025, Jan 2026 and Feb 2026 becomes the season_year winter)
+* season (Spring: March to May; Summer: June to August; Autumn: September to November; Winter: December to February)
+
+If appropriate, create the existing analytical indicators:
+
+* summer_like: tavg >= 20°C
+* winter_like: tavg <= 5°C
+* over_35: tmax >= 35°C
+
+Do not invent values or interpolate the Korean War observation gap.
+
+## B. Reproduce the key analytical results
+
+Create reusable analysis functions for the following.
+
+### 1. Overall warming trend
+
+Calculate:
+
+* annual average temperature
+* linear regression slope
+* p-value
+* R²
+* estimated change per 100 years
+* Mann-Kendall trend
+* Sen's slope
+
+### 2. Seasonal warming
+
+Calculate long-term trends for:
+
+* summer (June-August)
+* winter (December-February)
+
+For each season calculate:
+
+* average temperature
+* linear regression slope
+* p-value
+* change per 100 years
+* Mann-Kendall trend
+* Sen's slope
+
+Also calculate the ratio of winter warming rate to summer warming rate.
+
+### 3. Seasonal transition / expansion
+
+Using the temperature-based indicators from the original analysis:
+
+* May: percentage of summer-like days (tavg >= 20°C)
+* September: percentage of summer-like days
+* November: percentage of winter-like days (tavg <= 5°C)
+* March: percentage of winter-like days
+
+Calculate:
+
+* long-term trend
+* change per 100 years
+* p-value
+* Sen's slope
+
+Also calculate the difference between the early historical period and recent historical period, using the same periods as the original report if possible.
+
+### 4. Extreme heat
+
+Analyze annual number of days where:
+
+tmax >= 35°C
+
+Calculate:
+
+* annual counts
+* long-term linear trend
+* p-value
+* Mann-Kendall trend
+* Sen's slope
+* notable years with unusually high counts
+
+Do NOT automatically describe this as an increasing trend. Preserve the statistical result.
+
+### 5. Summer forecast
+
+Reproduce the existing forecasting result if the required historical summer series can be reconstructed from the dataset.
+
+The original analysis used:
+
+* summer = June-August
+* ARIMA(0,1,1)
+* 2026-2030 forecast
+* prediction interval
+
+Calculate:
+
+* forecast values
+* prediction interval
+* model evaluation metrics if practical
+
+Also preserve the linear-regression forecast as a baseline if it is already available in the existing analysis.
+
+## C. Create a reusable analysis summary
+
+Create Python functions that return structured dictionaries containing the above results.
+
+The summary should be suitable for later use by:
+GET /api/data/summary
+
+Do not connect the summary to Firestore yet.
+
+Do not connect it to OpenAI yet.
+
+Do not build the frontend yet.
+
+Do not deploy yet.
+
+IMPORTANT:
+Use the existing analysis/report as the reference for methodology and expected results. Do not replace the original analysis with arbitrary new methods unless there is a clear technical reason.
+
+After completing STEP 2:
+
+1. Show me the final data-processing flow.
+2. Show me the structure of the analytical summary dictionary.
+3. Show the key calculated results.
+4. Compare the calculated results with the existing report and identify any discrepancies.
+5. Explain how missing data and the Korean War observation gap are handled.
+6. Explain which results will be exposed later through the Data Summary API.
+7. Tell me what files you created or modified.
+8. Stop and wait for my instruction.
