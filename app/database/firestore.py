@@ -1,0 +1,1 @@
+# Placeholder for Firebase Admin SDK initialization and Firestore CRUD operations

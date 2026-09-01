@@ -35,9 +35,9 @@ Below are the prompts I would actually give Antigravity.
 
 # STEP 1 — Project setup & architecture
 
-```text
 The goal here is **not to build functionality yet**. You want Antigravity to establish a clean foundation.
 
+```text
 You are helping me build an educational AI Native project step by step.
 
 The project is an AI data assistant based on Seoul historical daily temperature data.

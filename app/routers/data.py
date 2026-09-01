@@ -1,0 +1,1 @@
+# Placeholder for data CRUD and summary endpoints (/api/data, /api/data/summary)

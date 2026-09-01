@@ -1,0 +1,1 @@
+# Placeholder for business logic handling energy data operations
