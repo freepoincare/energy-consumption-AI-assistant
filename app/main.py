@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.routers import data
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Personal electricity-consumption AI assistant API"
+    description="Educational AI Native personal electricity-consumption assistant API"
 )
 
 # CORS Middleware configuration
@@ -17,6 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Routers
+app.include_router(data.router)
+
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint to verify backend service status."""
@@ -27,9 +32,11 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
+
 @app.get("/", tags=["Root"])
 async def root():
     return {
         "message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for documentation.",
-        "health": "/health"
+        "health": "/health",
+        "docs": "/docs"
     }

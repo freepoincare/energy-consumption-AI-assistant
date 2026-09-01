@@ -1,4 +1,4 @@
-﻿"""
+"""
 Comprehensive Energy Analysis and Summary Service.
 
 Computes multi-dimensional energy consumption summaries from daily datasets:
@@ -42,7 +42,10 @@ def generate_energy_summary(daily_df: pd.DataFrame) -> Dict[str, Any]:
     # Check for complete days
     if "is_complete_day" in df.columns:
         complete_days = int(df["is_complete_day"].sum())
-        partial_days_list = df[~df["is_complete_day"]][["date", "record_count"]].to_dict(orient="records")
+        cols_to_extract = ["date"]
+        if "record_count" in df.columns:
+            cols_to_extract.append("record_count")
+        partial_days_list = df[~df["is_complete_day"]][cols_to_extract].to_dict(orient="records")
     else:
         complete_days = total_days
         partial_days_list = []
