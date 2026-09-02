@@ -6,7 +6,7 @@ from app.routers import data
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Educational AI Native personal electricity-consumption assistant API"
+    description="Personal electricity-consumption AI assistant API"
 )
 
 # CORS Middleware configuration

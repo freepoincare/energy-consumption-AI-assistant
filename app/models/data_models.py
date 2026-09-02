@@ -8,7 +8,7 @@ from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 import re
 
-
+# 데이터 입력 생성
 class EnergyDataCreate(BaseModel):
     date: str = Field(..., description="Local calendar date in YYYY-MM-DD format", example="2026-09-01")
     value: float = Field(..., ge=0.0, description="Daily electricity consumption in kWh", example=4.52)
@@ -26,12 +26,12 @@ class EnergyDataCreate(BaseModel):
             raise ValueError("Invalid calendar date")
         return v
 
-
+# 수정용 모델
 class EnergyDataUpdate(BaseModel):
     value: Optional[float] = Field(default=None, ge=0.0, description="Daily electricity consumption in kWh", example=5.10)
     memo: Optional[str] = Field(default=None, max_length=500, description="Optional user note", example="Updated note")
 
-
+# 단일 조회 응답
 class EnergyDataResponse(BaseModel):
     id: str = Field(..., description="Unique record identifier (e.g. date string or UUID)")
     date: str = Field(..., description="Local calendar date in YYYY-MM-DD format")
@@ -41,12 +41,12 @@ class EnergyDataResponse(BaseModel):
     created_at: Optional[str] = Field(default=None, description="ISO timestamp when created")
     updated_at: Optional[str] = Field(default=None, description="ISO timestamp when updated")
 
-
+# 목록 조회 응답 모델
 class EnergyDataListResponse(BaseModel):
     total_count: int = Field(..., description="Total number of daily records")
     records: List[EnergyDataResponse] = Field(..., description="List of daily energy records")
 
-
+# 통계/분석 응답 모델
 class SummaryResponse(BaseModel):
     period: Dict[str, Any] = Field(..., description="Analysis period details")
     counts: Dict[str, Any] = Field(..., description="Dataset coverage and count details")
