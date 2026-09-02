@@ -57,5 +57,13 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Block Firebase Admin SDK keys
+config/
+config/*-firebase-adminsdk-*.json
+*-firebase-adminsdk-*.json
+
 # temporary
 archive/
+archive/prompts
+archive/study
+tests/
