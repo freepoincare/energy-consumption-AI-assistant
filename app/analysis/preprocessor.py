@@ -1,4 +1,4 @@
-﻿"""
+"""
 Raw data validation and daily energy preprocessing module.
 
 This module handles:
@@ -29,12 +29,12 @@ def validate_raw_energy_data(df: pd.DataFrame) -> Dict[str, Any]:
     duplicate_count = int(df["start"].duplicated().sum())
 
     # Convert timestamps
-    start_dt = pd.to_datetime(df["start"])
-    end_dt = pd.to_datetime(df["end"])
+    start_dt = pd.to_datetime(df["start"], format="ISO8601")
+    end_dt = pd.to_datetime(df["end"], format="ISO8601")
 
-    # Duration check (each interval should be ~30 min)
+    # Duration check (each interval should be ~30 min, allowing sub-second end-of-day timestamping e.g. 23:59:59.999)
     duration_min = (end_dt - start_dt).dt.total_seconds() / 60.0
-    invalid_durations = int((duration_min != 30.0).sum())
+    invalid_durations = int(((duration_min < 29.9) | (duration_min > 30.1)).sum())
 
     # Start < End check
     invalid_time_relationships = int((start_dt >= end_dt).sum())
@@ -109,7 +109,7 @@ def preprocess_daily_energy(df: pd.DataFrame) -> pd.DataFrame:
     df_clean = df.copy()
     
     # Parse timestamp preserving timezone
-    start_dt = pd.to_datetime(df_clean["start"])
+    start_dt = pd.to_datetime(df_clean["start"], format="ISO8601")
     df_clean["date"] = start_dt.dt.strftime("%Y-%m-%d")
 
     # Group by local date string
