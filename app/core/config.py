@@ -1,15 +1,23 @@
-from pydantic_settings import BaseSettings
-from typing import List, Union
+import os
 import json
+from typing import List, Union
+
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    from pydantic import BaseModel as BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Electricity Consumption AI Assistant"
-    VERSION: str = "0.1.0"
-    ENVIRONMENT: str = "development"
-    PORT: int = 8000
+    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "Electricity Consumption AI Assistant")
+    VERSION: str = os.getenv("VERSION", "0.1.0")
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    PORT: int = int(os.getenv("PORT", "8000"))
     
     # CORS
-    ALLOWED_ORIGINS: Union[str, List[str]] = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000"
+    ALLOWED_ORIGINS: Union[str, List[str]] = os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000"
+    )
     
     @property
     def cors_origins(self) -> List[str]:
