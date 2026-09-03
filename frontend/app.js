@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentConversationId = null;
     let energyChart = null;
     let cachedSummary = null;
+    let cachedDailyRecords = [];
 
     // ─── DOM Elements ───────────────────────────────────────────
     const chatForm = document.getElementById("chat-form");
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CRUD Elements
     const dailyDataTbody = document.getElementById("daily-data-tbody");
     const btnAddRecord = document.getElementById("btn-add-record");
+    const btnExportCsv = document.getElementById("btn-export-csv");
     const dataModal = document.getElementById("data-modal");
     const modalTitle = document.getElementById("modal-title");
     const dataForm = document.getElementById("data-form");
@@ -376,6 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const result = await ApiService.listEnergyData();
             const records = result.records || [];
+            cachedDailyRecords = records;
             renderDailyTable(records);
             renderChart(records);
         } catch (error) {
@@ -391,7 +394,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const displayRecords = [...records].reverse().slice(0, 30);
+        // Sort descending by date so most recent appears on top
+        const displayRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
 
         displayRecords.forEach(rec => {
             const tr = document.createElement("tr");
@@ -400,11 +404,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${rec.value} kWh</td>
                 <td title="${rec.memo || ''}">${rec.memo ? (rec.memo.length > 25 ? rec.memo.substring(0, 25) + '...' : rec.memo) : '<span style="color:var(--text-secondary)">—</span>'}</td>
                 <td>
-                    <button class="btn-action edit" data-id="${rec.id}" aria-label="Edit record">
+                    <button class="btn-action edit" data-id="${rec.id}" aria-label="Edit record for ${rec.date}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         Edit
                     </button>
-                    <button class="btn-action delete" data-id="${rec.id}" aria-label="Delete record">
+                    <button class="btn-action delete" data-id="${rec.id}" aria-label="Delete record for ${rec.date}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         Del
                     </button>
@@ -483,6 +487,50 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             showToast(`Failed to delete: ${error.message}`, "error");
         }
+    }
+
+    // ─── Data Export (CSV) ──────────────────────────────────────
+    function exportDailyDataToCsv() {
+        if (!cachedDailyRecords || cachedDailyRecords.length === 0) {
+            showToast("No stored daily records available to export", "error");
+            return;
+        }
+
+        // Sort chronologically ascending for standard timeseries data export
+        const exportRecords = [...cachedDailyRecords].sort((a, b) => a.date.localeCompare(b.date));
+
+        // CSV Header
+        const headers = ["date", "consumption_kwh", "memo", "id"];
+
+        // Build CSV rows with proper quote escaping for RFC 4180 compliance
+        const rows = exportRecords.map(rec => {
+            const dateStr = `"${(rec.date || '').replace(/"/g, '""')}"`;
+            const valStr = rec.value !== undefined && rec.value !== null ? rec.value : 0;
+            const memoStr = `"${(rec.memo || '').replace(/"/g, '""')}"`;
+            const idStr = `"${(rec.id || '').replace(/"/g, '""')}"`;
+            return [dateStr, valStr, memoStr, idStr].join(",");
+        });
+
+        const csvContent = [headers.join(","), ...rows].join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const startDate = exportRecords[0].date;
+        const endDate = exportRecords[exportRecords.length - 1].date;
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", `daily_energy_consumption_${startDate}_to_${endDate}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast(`Exported ${exportRecords.length} daily energy records to CSV`, "success");
+    }
+
+    if (btnExportCsv) {
+        btnExportCsv.addEventListener("click", exportDailyDataToCsv);
     }
 
     // ============================================================

@@ -560,12 +560,18 @@ header {
 }
 
 .data-table-container {
+  max-height: 480px;
+  overflow-y: auto;
   overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  position: relative;
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.85rem;
 }
 
@@ -578,10 +584,10 @@ thead th {
   letter-spacing: 0.03em;
   color: var(--text-secondary);
   background: var(--surface-hover);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 tbody td {
