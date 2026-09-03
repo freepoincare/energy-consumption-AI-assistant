@@ -41,6 +41,7 @@ venv.bak/
 *.json
 !data/**/*.json
 !package.json
+!vercel.json
 
 # IDE / Editor files
 .vscode/

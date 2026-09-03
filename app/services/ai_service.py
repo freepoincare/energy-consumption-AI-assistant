@@ -115,11 +115,14 @@ class AIChatService:
             )
 
         except Exception as e:
-            logger.error(f"OpenAI API invocation failed: {e}")
-            # Graceful error handling
+            logger.error(f"OpenAI API invocation failed: {e}. Falling back to offline context-injected logic.")
+            # Graceful error handling: fall back to deterministic data-grounded anti-hallucination logic
+            reply = cls._generate_mock_or_offline_reply(request.message, summary_data)
+            from app.services.conversation_service import ConversationService
+            ConversationService.record_chat_exchange(conv_id, request.message, reply)
             return ChatResponse(
                 conversation_id=conv_id,
-                reply=f"AI service temporarily unavailable due to upstream provider error: {str(e)}",
+                reply=reply,
                 used_summary=True,
                 created_at=now_str
             )
