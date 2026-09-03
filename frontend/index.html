@@ -4,135 +4,210 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Electricity Consumption AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Header & Architecture Data Flow Banner -->
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
     <header>
-        <div class="logo-container">
-            <span class="logo-badge">⚡ AI-Native</span>
-            <div class="header-title">
-                <h1>Electricity Assistant</h1>
-                <p>Personal Time-Series Analytics & Context-Injected AI Assistant</p>
+        <div class="header-container">
+            <div class="header-left">
+                <div class="header-logo" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div class="header-brand">
+                    <h1>Electricity Assistant</h1>
+                    <p>Personal Energy Analytics</p>
+                </div>
             </div>
-        </div>
-        <div class="flow-indicator">
-            <span class="flow-step">Raw Data (30-min)</span> ➔
-            <span class="flow-step">Daily Preprocessing</span> ➔
-            <span class="flow-step">Firestore</span> ➔
-            <span class="flow-step">Summary Service</span> ➔
-            <span class="flow-step active">GPT Chatbot</span>
+            <div class="header-right">
+                <span id="header-date-range" class="header-date">Loading...</span>
+                <button id="btn-history-toggle" class="btn-icon" aria-label="Chat history" title="Chat History">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                <button id="btn-dark-mode" class="btn-icon" aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        
-        <!-- Left Column: Conversation History -->
-        <aside class="sidebar-history">
-            <div class="sidebar-header">
-                <h2>💬 Chat History</h2>
-                <button id="btn-new-chat" class="btn-new-chat">+ New Chat</button>
-            </div>
-            <div id="conversation-list" class="conversation-list">
-                <!-- Populated dynamically -->
-            </div>
-        </aside>
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main class="main-content">
+        <div class="container">
 
-        <!-- Center Column: AI Chat Interface -->
-        <main class="chat-section">
-            <div class="chat-header">
-                <h2 id="current-chat-title">🤖 Energy AI Assistant</h2>
-                <span id="chat-status" class="metric-badge">Context Injected (Summary v1)</span>
-            </div>
-            <div id="chat-messages" class="chat-messages">
-                <div class="message-bubble assistant">
-                    Hello! I am your personal electricity consumption assistant. I have analyzed your 6-month energy consumption data (March 1 to August 31, 2026). Feel free to ask about your average daily usage, peak days, monthly comparisons, or trends!
+            <!-- Section 1: KPI Overview Cards -->
+            <section class="kpi-grid" aria-label="Energy overview">
+                <div class="kpi-card kpi-blue">
+                    <span class="kpi-label">Average / Day</span>
+                    <div class="kpi-value" id="metric-avg"><span class="skeleton">&mdash;</span></div>
+                    <span class="kpi-unit">kWh</span>
                 </div>
-            </div>
-            <form id="chat-form" class="chat-input-area">
-                <input 
-                    type="text" 
-                    id="chat-input" 
-                    class="chat-input" 
-                    placeholder="Ask a question about your electricity usage..." 
-                    autocomplete="off"
-                    required
-                >
-                <button type="submit" id="btn-send" class="btn-send">Send</button>
-            </form>
-        </main>
-
-        <!-- Right Column: Summary & Daily Data Management -->
-        <aside class="right-panel">
-            
-            <!-- Energy Summary Card -->
-            <section class="panel-card">
-                <h3>
-                    📊 Energy Summary
-                    <span id="summary-badge" class="metric-badge">Live Sync</span>
-                </h3>
-                <div class="summary-metrics">
-                    <div class="metric-item">
-                        <div class="metric-label">Daily Avg (kWh/day)</div>
-                        <div id="metric-avg" class="metric-val">--</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Total Usage (kWh)</div>
-                        <div id="metric-total" class="metric-val">--</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Peak Usage Day</div>
-                        <div id="metric-max" class="metric-val">--</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Lowest Day</div>
-                        <div id="metric-min" class="metric-val">--</div>
-                    </div>
+                <div class="kpi-card kpi-green">
+                    <span class="kpi-label">Total Usage</span>
+                    <div class="kpi-value" id="metric-total"><span class="skeleton">&mdash;</span></div>
+                    <span class="kpi-unit">kWh</span>
                 </div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
-                    <div>📅 <strong>Period:</strong> <span id="summary-period">Loading...</span></div>
-                    <div>📈 <strong>Trend:</strong> <span id="summary-trend">Loading...</span></div>
-                    <div>💰 <strong>Est. Cost:</strong> <span id="summary-cost">Loading...</span></div>
+                <div class="kpi-card kpi-orange">
+                    <span class="kpi-label">Peak Day</span>
+                    <div class="kpi-value" id="metric-max"><span class="skeleton">&mdash;</span></div>
+                    <span class="kpi-sub" id="metric-max-date"></span>
+                </div>
+                <div class="kpi-card kpi-purple">
+                    <span class="kpi-label">Lowest Day</span>
+                    <div class="kpi-value" id="metric-min"><span class="skeleton">&mdash;</span></div>
+                    <span class="kpi-sub" id="metric-min-date"></span>
                 </div>
             </section>
 
-            <!-- Daily Energy Management Card (CRUD) -->
-            <section class="panel-card">
-                <h3>
-                    📝 Daily Data (kWh)
-                    <button id="btn-add-record" class="btn-new-chat">+ Add Day</button>
-                </h3>
+            <!-- Section 2: Energy Trend Chart -->
+            <section class="card chart-card">
+                <div class="card-header">
+                    <div>
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Electricity Consumption
+                        </h2>
+                        <p class="card-subtitle" id="chart-subtitle">Daily usage trend</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="energy-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Section 3 & 5: AI Chat + Insights (two-column) -->
+            <div class="two-col-layout">
+
+                <!-- AI Assistant -->
+                <section class="card chat-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="current-chat-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1a2 2 0 0 1 2 2v3a8 8 0 0 1-16 0V9a2 2 0 0 1 2-2V6a4 4 0 0 1 4-4z"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/></svg>
+                                Energy AI Assistant
+                            </h2>
+                            <p class="card-subtitle">Ask questions about your electricity usage</p>
+                        </div>
+                        <span id="chat-status" class="badge badge-info">Context Injected</span>
+                    </div>
+
+                    <!-- Quick Questions -->
+                    <div class="quick-questions" id="quick-questions">
+                        <button class="chip" data-question="What is my average daily usage?">Average daily usage?</button>
+                        <button class="chip" data-question="Which month did I use the most electricity?">Highest month?</button>
+                        <button class="chip" data-question="Do I use more electricity on weekends?">Weekend vs weekday?</button>
+                        <button class="chip" data-question="Has my usage increased recently?">Recent trend?</button>
+                        <button class="chip" data-question="Which day had my highest consumption?">Peak day?</button>
+                    </div>
+
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message-bubble assistant">
+                            <p>Hello! I'm your personal electricity consumption assistant. I've analyzed your 6-month energy data (March&ndash;August 2026). Ask me about usage patterns, trends, or comparisons!</p>
+                        </div>
+                    </div>
+                    <form id="chat-form" class="chat-input-area">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Ask about your electricity usage..." autocomplete="off" required aria-label="Chat message input">
+                        <button type="submit" id="btn-send" class="btn-send" aria-label="Send message">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            Send
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Insights Panel -->
+                <aside class="card insights-card">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            Energy Insights
+                        </h2>
+                    </div>
+                    <div class="insights-content" id="insights-content">
+                        <div class="empty-state">Loading insights...</div>
+                    </div>
+                </aside>
+
+            </div>
+
+            <!-- Section 6: Daily Energy Data Table -->
+            <section class="card data-card">
+                <div class="card-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                        Daily Energy Data
+                    </h2>
+                    <button id="btn-add-record" class="btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Day
+                    </button>
+                </div>
                 <div class="data-table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Value (kWh)</th>
+                                <th>Consumption (kWh)</th>
                                 <th>Memo</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="daily-data-tbody">
-                            <!-- Populated dynamically -->
+                            <tr><td colspan="4" class="empty-state">Loading data...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
 
-        </aside>
+        </div>
+    </main>
 
-    </div>
+    <!-- ============================================================
+         CONVERSATION HISTORY SIDEBAR
+         ============================================================ -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+    <aside id="sidebar-history" class="sidebar-history" aria-label="Conversation history">
+        <div class="sidebar-header">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Chat History
+            </h2>
+            <button id="btn-sidebar-close" class="btn-icon" aria-label="Close sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <button id="btn-new-chat" class="btn-primary sidebar-new-chat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Chat
+        </button>
+        <div id="conversation-list" class="conversation-list">
+            <div class="empty-state">No conversations yet</div>
+        </div>
+    </aside>
 
-    <!-- Add / Edit Record Modal -->
-    <div id="data-modal" class="modal-overlay">
+    <!-- ============================================================
+         ADD / EDIT RECORD MODAL
+         ============================================================ -->
+    <div id="data-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content">
-            <h3 id="modal-title">Add Daily Energy Record</h3>
+            <div class="modal-header">
+                <h3 id="modal-title">Add Daily Energy Record</h3>
+                <button type="button" id="btn-modal-close" class="btn-icon" aria-label="Close modal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
             <form id="data-form">
                 <input type="hidden" id="form-record-id">
                 <div class="form-group">
-                    <label for="form-date">Date (YYYY-MM-DD)</label>
+                    <label for="form-date">Date</label>
                     <input type="date" id="form-date" required>
                 </div>
                 <div class="form-group">
@@ -144,14 +219,23 @@
                     <textarea id="form-memo" rows="2" placeholder="e.g. Worked from home, heater on"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" id="btn-modal-cancel" class="btn-modal cancel">Cancel</button>
-                    <button type="submit" class="btn-modal submit">Save Record</button>
+                    <button type="button" id="btn-modal-cancel" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Record</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Electricity Consumption AI Assistant &copy; 2026</p>
+    </footer>
+
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="config.js"></script>
     <script src="api.js"></script>
     <script src="app.js"></script>
