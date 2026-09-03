@@ -499,16 +499,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // Sort chronologically ascending for standard timeseries data export
         const exportRecords = [...cachedDailyRecords].sort((a, b) => a.date.localeCompare(b.date));
 
-        // CSV Header
-        const headers = ["date", "consumption_kwh", "memo", "id"];
+        // CSV Header (clean, user-facing timeseries export)
+        const headers = ["date", "consumption_kwh", "memo"];
 
         // Build CSV rows with proper quote escaping for RFC 4180 compliance
         const rows = exportRecords.map(rec => {
             const dateStr = `"${(rec.date || '').replace(/"/g, '""')}"`;
             const valStr = rec.value !== undefined && rec.value !== null ? rec.value : 0;
             const memoStr = `"${(rec.memo || '').replace(/"/g, '""')}"`;
-            const idStr = `"${(rec.id || '').replace(/"/g, '""')}"`;
-            return [dateStr, valStr, memoStr, idStr].join(",");
+            return [dateStr, valStr, memoStr].join(",");
         });
 
         const csvContent = [headers.join(","), ...rows].join("\r\n");
