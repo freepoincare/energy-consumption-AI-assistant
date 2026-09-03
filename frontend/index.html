@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Consumption AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header & Architecture Data Flow Banner -->
+    <header>
+        <div class="logo-container">
+            <span class="logo-badge">⚡ AI-Native</span>
+            <div class="header-title">
+                <h1>Electricity Assistant</h1>
+                <p>Personal Time-Series Analytics & Context-Injected AI Assistant</p>
+            </div>
+        </div>
+        <div class="flow-indicator">
+            <span class="flow-step">Raw Data (30-min)</span> ➔
+            <span class="flow-step">Daily Preprocessing</span> ➔
+            <span class="flow-step">Firestore</span> ➔
+            <span class="flow-step">Summary Service</span> ➔
+            <span class="flow-step active">GPT Chatbot</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Left Column: Conversation History -->
+        <aside class="sidebar-history">
+            <div class="sidebar-header">
+                <h2>💬 Chat History</h2>
+                <button id="btn-new-chat" class="btn-new-chat">+ New Chat</button>
+            </div>
+            <div id="conversation-list" class="conversation-list">
+                <!-- Populated dynamically -->
+            </div>
+        </aside>
+
+        <!-- Center Column: AI Chat Interface -->
+        <main class="chat-section">
+            <div class="chat-header">
+                <h2 id="current-chat-title">🤖 Energy AI Assistant</h2>
+                <span id="chat-status" class="metric-badge">Context Injected (Summary v1)</span>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <div class="message-bubble assistant">
+                    Hello! I am your personal electricity consumption assistant. I have analyzed your 6-month energy consumption data (March 1 to August 31, 2026). Feel free to ask about your average daily usage, peak days, monthly comparisons, or trends!
+                </div>
+            </div>
+            <form id="chat-form" class="chat-input-area">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Ask a question about your electricity usage..." 
+                    autocomplete="off"
+                    required
+                >
+                <button type="submit" id="btn-send" class="btn-send">Send</button>
+            </form>
+        </main>
+
+        <!-- Right Column: Summary & Daily Data Management -->
+        <aside class="right-panel">
+            
+            <!-- Energy Summary Card -->
+            <section class="panel-card">
+                <h3>
+                    📊 Energy Summary
+                    <span id="summary-badge" class="metric-badge">Live Sync</span>
+                </h3>
+                <div class="summary-metrics">
+                    <div class="metric-item">
+                        <div class="metric-label">Daily Avg (kWh/day)</div>
+                        <div id="metric-avg" class="metric-val">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Total Usage (kWh)</div>
+                        <div id="metric-total" class="metric-val">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Peak Usage Day</div>
+                        <div id="metric-max" class="metric-val">--</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Lowest Day</div>
+                        <div id="metric-min" class="metric-val">--</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                    <div>📅 <strong>Period:</strong> <span id="summary-period">Loading...</span></div>
+                    <div>📈 <strong>Trend:</strong> <span id="summary-trend">Loading...</span></div>
+                    <div>💰 <strong>Est. Cost:</strong> <span id="summary-cost">Loading...</span></div>
+                </div>
+            </section>
+
+            <!-- Daily Energy Management Card (CRUD) -->
+            <section class="panel-card">
+                <h3>
+                    📝 Daily Data (kWh)
+                    <button id="btn-add-record" class="btn-new-chat">+ Add Day</button>
+                </h3>
+                <div class="data-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Value (kWh)</th>
+                                <th>Memo</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daily-data-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </aside>
+
+    </div>
+
+    <!-- Add / Edit Record Modal -->
+    <div id="data-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Add Daily Energy Record</h3>
+            <form id="data-form">
+                <input type="hidden" id="form-record-id">
+                <div class="form-group">
+                    <label for="form-date">Date (YYYY-MM-DD)</label>
+                    <input type="date" id="form-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="form-value">Daily Electricity Consumption (kWh)</label>
+                    <input type="number" id="form-value" step="0.001" min="0" placeholder="e.g. 5.12" required>
+                </div>
+                <div class="form-group">
+                    <label for="form-memo">Memo / Note (Optional)</label>
+                    <textarea id="form-memo" rows="2" placeholder="e.g. Worked from home, heater on"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="btn-modal-cancel" class="btn-modal cancel">Cancel</button>
+                    <button type="submit" class="btn-modal submit">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
