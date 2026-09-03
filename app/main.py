@@ -1,7 +1,10 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.core.config import settings
-from app.routers import data, chat
+from app.routers import data, chat, conversations
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,7 +24,11 @@ app.add_middleware(
 # Include Routers
 app.include_router(data.router)
 app.include_router(chat.router)
+app.include_router(conversations.router)
 
+# Static Files for Frontend
+if os.path.exists("frontend"):
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 @app.get("/health", tags=["Health"])
 async def health_check():
@@ -33,9 +40,10 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
-
 @app.get("/", tags=["Root"])
 async def root():
+    if os.path.exists("frontend/index.html"):
+        return FileResponse("frontend/index.html")
     return {
         "message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for documentation.",
         "health": "/health",

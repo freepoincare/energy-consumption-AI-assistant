@@ -80,6 +80,9 @@ class AIChatService:
         if client is None or not settings.OPENAI_API_KEY:
             # Deterministic local rule-based response when OpenAI API Key is not set
             reply = cls._generate_mock_or_offline_reply(request.message, summary_data)
+            # Persist completed chat exchange
+            from app.services.conversation_service import ConversationService
+            ConversationService.record_chat_exchange(conv_id, request.message, reply)
             return ChatResponse(
                 conversation_id=conv_id,
                 reply=reply,
@@ -99,6 +102,10 @@ class AIChatService:
                 max_tokens=800
             )
             reply = response.choices[0].message.content.strip()
+
+            # Persist completed chat exchange
+            from app.services.conversation_service import ConversationService
+            ConversationService.record_chat_exchange(conv_id, request.message, reply)
 
             return ChatResponse(
                 conversation_id=conv_id,
