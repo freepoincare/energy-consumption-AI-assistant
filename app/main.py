@@ -27,9 +27,6 @@ app.include_router(chat.router)
 app.include_router(conversations.router)
 
 # Static Files for Frontend
-if os.path.exists("frontend"):
-    app.mount("/static", StaticFiles(directory="frontend"), name="static")
-
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint to verify backend service status."""
@@ -40,12 +37,15 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
-@app.get("/", tags=["Root"])
-async def root():
-    if os.path.exists("frontend/index.html"):
-        return FileResponse("frontend/index.html")
-    return {
-        "message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for documentation.",
-        "health": "/health",
-        "docs": "/docs"
-    }
+# Static Files for Frontend (serves index.html, style.css, app.js, etc. directly at root)
+if os.path.exists("frontend"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+else:
+    @app.get("/", tags=["Root"])
+    async def root():
+        return {
+            "message": f"Welcome to {settings.PROJECT_NAME} API. Visit /docs for documentation.",
+            "health": "/health",
+            "docs": "/docs"
+        }
+
