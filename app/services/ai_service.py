@@ -60,8 +60,8 @@ TOOL_DEFINITIONS = [
             "name": "get_energy_data_by_period",
             "description": (
                 "Retrieves daily electricity records for a specified date range (inclusive). "
-                "Returns a list of records with date, consumption_kwh, and memo where available. "
-                "Use this when the user asks about consumption over a custom date range "
+                "Returns total_consumption_kwh, average_daily_consumption_kwh, and the list of daily records with date, consumption_kwh, and memo. "
+                "Use this when the user asks about consumption over a custom date range, day-by-day records, "
                 "or wants to investigate changes over time that the summary cannot answer."
             ),
             "parameters": {
@@ -85,9 +85,8 @@ TOOL_DEFINITIONS = [
         "function": {
             "name": "get_energy_statistics",
             "description": (
-                "Calculates statistics (total, average, min, max, count) for a specific date range "
-                "when the existing summary is insufficient. Use only when genuinely useful — "
-                "e.g. comparing two sub-periods, or computing stats for a custom range."
+                "Calculates deterministic statistics (total_consumption_kwh, average_daily_consumption_kwh, minimum, maximum, count) for a specific date range. "
+                "Use this whenever the user asks for total, average, or summary consumption over a custom date range (e.g. 'between June 1 and June 15', 'first two weeks of August')."
             ),
             "parameters": {
                 "type": "object",
@@ -222,9 +221,15 @@ def execute_get_energy_data_by_period(args: Dict[str, Any]) -> Dict[str, Any]:
             "records_count": 0
         }
 
+    values = [r["consumption_kwh"] for r in filtered if r.get("consumption_kwh") is not None]
+    total_kwh = round(sum(values), 4) if values else 0.0
+    avg_kwh = round(total_kwh / len(values), 4) if values else 0.0
+
     return {
         "period": {"start_date": start_date, "end_date": end_date},
         "records_count": len(filtered),
+        "total_consumption_kwh": total_kwh,
+        "average_daily_consumption_kwh": avg_kwh,
         "records": filtered
     }
 
@@ -310,8 +315,8 @@ TOOL SELECTION RULES (Context Injection vs Function Calling):
 2. If the summary contains enough information to answer the question, answer directly WITHOUT calling any tool.
 3. Only call a tool when the summary is genuinely insufficient — e.g., for a specific date's consumption, a custom date range, or memo-based investigation.
 4. Use get_energy_data_by_date when the user asks about a specific day's consumption or memo.
-5. Use get_energy_data_by_period when the user asks about a custom date range or wants to investigate changes over time.
-6. Use get_energy_statistics when the user needs computed statistics for a specific sub-period that the summary doesn't cover.
+5. Use get_energy_statistics when the user asks about total, average, or summary consumption over a custom date range (e.g. 'between June 1 and June 15', 'first two weeks of August'). Rely directly on the returned pre-calculated 'total_consumption_kwh' and 'average_daily_consumption_kwh'. Do NOT manually sum the individual daily numbers.
+6. Use get_energy_data_by_period when the user asks for individual daily records over a custom date range or wants to investigate day-by-day changes over time. If using get_energy_data_by_period for totals, always use the pre-calculated 'total_consumption_kwh' field returned by the tool.
 
 STRICT ANTI-HALLUCINATION RULES:
 1. Rely ONLY on the information provided in the summary above or retrieved via tool calls.
@@ -332,7 +337,7 @@ RESPONSE STYLE:
 - Maintain a helpful, polite, and data-grounded tone.
 - Answer in the same language as the user's question (e.g. Korean if asked in Korean, English if asked in English).
 - PLAIN TEXT ONLY: Do NOT use markdown formatting (no bold '**', italics, headers '#', bullet points '-', or numbered lists) and do NOT use LaTeX math formulas (no \frac, \text, \[, \], etc.).
-- CONCISE DIRECT ANSWERS: Skip step-by-step reasoning, calculations, daily breakdowns, or intermediate work. Provide only the direct final answer clearly and cleanly.
+- CONCISE DIRECT ANSWERS: Provide the direct final answer clearly and cleanly if possible.
 """
     return prompt
 
