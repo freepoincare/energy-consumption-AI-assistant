@@ -331,6 +331,8 @@ STRICT ANTI-HALLUCINATION RULES:
 RESPONSE STYLE:
 - Maintain a helpful, polite, and data-grounded tone.
 - Answer in the same language as the user's question (e.g. Korean if asked in Korean, English if asked in English).
+- PLAIN TEXT ONLY: Do NOT use markdown formatting (no bold '**', italics, headers '#', bullet points '-', or numbered lists) and do NOT use LaTeX math formulas (no \frac, \text, \[, \], etc.).
+- CONCISE DIRECT ANSWERS: Skip step-by-step reasoning, calculations, daily breakdowns, or intermediate work. Provide only the direct final answer clearly and cleanly.
 """
     return prompt
 
