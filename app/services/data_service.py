@@ -90,7 +90,6 @@ class FirestoreEnergyRepository:
                     d = doc.to_dict()
                     d["id"] = doc.id
                     return d
-                return None
             except Exception:
                 pass
 
