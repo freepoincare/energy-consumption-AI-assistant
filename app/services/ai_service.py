@@ -316,12 +316,13 @@ TOOL SELECTION RULES (Context Injection vs Function Calling):
 STRICT ANTI-HALLUCINATION RULES:
 1. Rely ONLY on the information provided in the summary above or retrieved via tool calls.
 2. Do NOT fabricate, invent, or extrapolate numeric values, dates, trends, averages, or costs.
-3. If a user asks about dates outside the analysis period ({summary_data.get('period', {}).get('start_date', '2026-03-01')} to {summary_data.get('period', {}).get('end_date', '2026-08-31')}), clearly state that data is only available for the recorded period.
-4. Always use "kWh" or "kWh/day" as the unit for electricity consumption.
-5. If discussing costs, clearly state that the cost values are "estimated costs" based on unit rates and do NOT represent confirmed or final utility bills.
-6. Do not infer a missing value as zero or make assumptions about unlisted metrics.
-7. Do NOT claim appliance-level electricity consumption. This dataset represents whole-home electricity consumption.
-8. When relating memo information to consumption changes, use cautious language:
+3. When the user asks about a specific month (e.g. "July 2026", "2026-07", "7월"), check the 'monthly.monthly_breakdown' section in the summary. If that month exists in 'monthly_breakdown', answer with that specific month's metrics (total_consumption_kwh, average_daily_consumption_kwh, days_count) instead of giving the overall period average.
+4. If a user asks about dates outside the analysis period ({summary_data.get('period', {}).get('start_date', '2026-03-01')} to {summary_data.get('period', {}).get('end_date', '2026-08-31')}), clearly state that data is only available for the recorded period.
+5. Always use "kWh" or "kWh/day" as the unit for electricity consumption.
+6. If discussing costs, clearly state that the cost values are "estimated costs" based on unit rates and do NOT represent confirmed or final utility bills.
+7. Do not infer a missing value as zero or make assumptions about unlisted metrics.
+8. Do NOT claim appliance-level electricity consumption. This dataset represents whole-home electricity consumption.
+9. When relating memo information to consumption changes, use cautious language:
    - "This coincides with your note that..."
    - "This may be related to..."
    - "The data shows an increase around this time..."
@@ -507,7 +508,68 @@ class AIChatService:
         dow = summary.get("day_of_week", {})
         ww = summary.get("weekday_weekend", {})
         monthly = summary.get("monthly", {})
+        breakdown = monthly.get("monthly_breakdown", {})
         cost = summary.get("cost", {})
+
+        # Check for specific month queries (e.g. "July 2026", "2026-07", "7월")
+        month_names_map = {
+            "january": "01", "february": "02", "march": "03", "april": "04",
+            "may": "05", "june": "06", "july": "07", "august": "08",
+            "september": "09", "october": "10", "november": "11", "december": "12",
+            "jan": "01", "feb": "02", "mar": "03", "apr": "04",
+            "jun": "06", "jul": "07", "aug": "08", "sep": "09",
+            "oct": "10", "nov": "11", "dec": "12",
+            "1월": "01", "2월": "02", "3월": "03", "4월": "04",
+            "5월": "05", "6월": "06", "7월": "07", "8월": "08",
+            "9월": "09", "10월": "10", "11월": "11", "12월": "12"
+        }
+
+        matched_ym = None
+        # Only treat as month query if NOT a specific full date (YYYY-MM-DD)
+        is_full_date = bool(re.search(r"\b\d{4}-\d{2}-\d{2}\b", msg))
+        if not is_full_date:
+            # Check standard YYYY-MM pattern
+            ym_match = re.search(r"\b(202\d)-(0[1-9]|1[0-2])\b", msg)
+            if ym_match:
+                matched_ym = f"{ym_match.group(1)}-{ym_match.group(2)}"
+            else:
+                # Check month name words
+                for m_word, m_num in month_names_map.items():
+                    if re.search(r"(?:\b|_)" + re.escape(m_word) + r"(?:\b|_)", msg):
+                        # Default year to 2026 if not specified
+                        year_match = re.search(r"\b(202\d)\b", msg)
+                        target_year = year_match.group(1) if year_match else "2026"
+                        candidate_ym = f"{target_year}-{m_num}"
+                        if candidate_ym in breakdown:
+                            matched_ym = candidate_ym
+                            break
+                        elif f"2026-{m_num}" in breakdown:
+                            matched_ym = f"2026-{m_num}"
+                            break
+
+        if matched_ym and matched_ym in breakdown:
+            m_data = breakdown[matched_ym]
+            m_avg = m_data.get("average_daily_consumption_kwh")
+            m_tot = m_data.get("total_consumption_kwh")
+            m_days = m_data.get("days_count")
+            return (
+                f"During {matched_ym}, your average daily electricity consumption was {m_avg} kWh/day "
+                f"(total: {m_tot} kWh across {m_days} days)."
+            )
+
+        if "highest" in msg or "maximum" in msg or "최대" in msg or "가장 많이" in msg:
+            if "month" in msg or "월" in msg:
+                h_month = monthly.get("highest_total_month", {})
+                return f"The month with the highest electricity usage was {h_month.get('month')} with a total of {h_month.get('total_consumption_kwh')} kWh."
+            max_day = extremes.get("maximum_day", {})
+            return f"Your highest consumption day was {max_day.get('date')} ({max_day.get('day_of_week')}) with {max_day.get('consumption_kwh')} kWh."
+
+        if "lowest" in msg or "minimum" in msg or "최소" in msg or "가장 적게" in msg:
+            if "month" in msg or "월" in msg:
+                l_month = monthly.get("lowest_average_month", {})
+                return f"The month with the lowest average electricity usage was {l_month.get('month')} with an average of {l_month.get('average_daily_consumption_kwh')} kWh/day."
+            min_day = extremes.get("minimum_day", {})
+            return f"Your lowest consumption day was {min_day.get('date')} ({min_day.get('day_of_week')}) with {min_day.get('consumption_kwh')} kWh."
 
         if "month" in msg or "월별" in msg or "월" in msg:
             h_month = monthly.get("highest_total_month", {})
@@ -515,10 +577,6 @@ class AIChatService:
 
         if "average" in msg or "평균" in msg:
             return f"Your overall average daily electricity consumption is {overall.get('average_daily_consumption_kwh')} kWh/day across {period.get('duration_days')} days ({period.get('start_date')} to {period.get('end_date')})."
-
-        if "highest" in msg or "maximum" in msg or "최대" in msg or "가장 많이" in msg:
-            max_day = extremes.get("maximum_day", {})
-            return f"Your highest consumption day was {max_day.get('date')} ({max_day.get('day_of_week')}) with {max_day.get('consumption_kwh')} kWh."
 
         if "lowest" in msg or "minimum" in msg or "최소" in msg or "가장 적게" in msg:
             min_day = extremes.get("minimum_day", {})
