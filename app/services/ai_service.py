@@ -525,9 +525,17 @@ class AIChatService:
         }
 
         matched_ym = None
-        # Only treat as month query if NOT a specific full date (YYYY-MM-DD)
+        # Only treat as single month query if NOT a specific full date (YYYY-MM-DD),
+        # NOT a date range query ("between", "from", "to", "weeks"), and NOT comparing multiple months ("and", "compare", "vs")
         is_full_date = bool(re.search(r"\b\d{4}-\d{2}-\d{2}\b", msg))
-        if not is_full_date:
+        is_range_query = any(k in msg for k in ["between", "from", "to", "week", "weeks", "기간", "~", "부터", "까지"])
+        is_compare_query = any(k in msg for k in ["compare", "difference", "vs", "versus", "비교", "차이"])
+
+        # If it's a range or compare query, or mentions multiple months, don't hijack with single-month summary
+        found_months = [m_word for m_word in month_names_map.keys() if re.search(r"(?:\b|_)" + re.escape(m_word) + r"(?:\b|_)", msg)]
+        is_multi_month = len(set(month_names_map[m] for m in found_months if m in month_names_map)) > 1
+
+        if not is_full_date and not is_range_query and not is_compare_query and not is_multi_month:
             # Check standard YYYY-MM pattern
             ym_match = re.search(r"\b(202\d)-(0[1-9]|1[0-2])\b", msg)
             if ym_match:
