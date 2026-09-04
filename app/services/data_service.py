@@ -1,4 +1,4 @@
-﻿"""
+"""
 Data Service Layer (Business Logic & Firestore Repository).
 
 Encapsulates all Firestore database CRUD interactions for the `data` collection.
@@ -64,21 +64,21 @@ class FirestoreEnergyRepository:
                 self._mock_store[date_str] = doc_data
 
     def get_all(self) -> List[Dict[str, Any]]:
+        # Start with baseline historical records from local store
+        merged = dict(self._mock_store)
+
         db = get_firestore_db()
         if db is not None:
             try:
                 docs = db.collection(self.COLLECTION_NAME).stream()
-                records = []
                 for doc in docs:
                     d = doc.to_dict()
                     d["id"] = doc.id
-                    records.append(d)
-                if records:
-                    return sorted(records, key=lambda x: x.get("date", ""))
-            except Exception as e:
-                pass  # Fall back to internal memory if connection issue
+                    merged[doc.id] = d
+            except Exception:
+                pass  # Keep baseline in-memory data on Firestore connection glitch
 
-        return sorted(list(self._mock_store.values()), key=lambda x: x["date"])
+        return sorted(list(merged.values()), key=lambda x: x.get("date", ""))
 
     def get_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
         db = get_firestore_db()
