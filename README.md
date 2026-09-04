@@ -395,16 +395,80 @@ The frontend is prepared for [Vercel](https://vercel.com) using [`vercel.json`](
 
 ---
 
-## 24. Specific-Date Query Limitation
+## 24. Function Calling / Tool Use (Implemented)
 
-- The injected summary contains aggregate statistics and extreme days (max/min).
-- For arbitrary dates (e.g., "What was my usage on July 14?"), the model will not invent a number and explicitly informs the user that single-day details are not included in the high-level summary and require a direct database lookup.
+### Overview & Core Philosophy
+The assistant employs **Context Injection by default**: if the pre-computed energy summary contains sufficient information to answer the user's question, GPT answers directly without invoking any tools.
+
+When a query asks for information absent from the summary (e.g., a specific calendar date, a custom date range, or details recorded in a user memo), GPT dynamically invokes internal backend tools via **OpenAI Function Calling**.
+
+### Tools List & Schemas
+1. **`get_energy_data_by_date`**:
+   - **Description**: Retrieves the actual daily electricity consumption record for a specified date, including `date`, `consumption_kwh`, and `memo`.
+   - **Parameters**:
+     - `date` (string, required): Date in `YYYY-MM-DD` format (e.g. `2026-07-15`).
+
+2. **`get_energy_data_by_period`**:
+   - **Description**: Retrieves daily electricity records for a specified date range (inclusive), returning an array of records with `date`, `consumption_kwh`, and `memo`.
+   - **Parameters**:
+     - `start_date` (string, required): Range start date in `YYYY-MM-DD` format.
+     - `end_date` (string, required): Range end date in `YYYY-MM-DD` format.
+
+3. **`get_energy_statistics`**:
+   - **Description**: Calculates aggregate statistics (`total_consumption_kwh`, `average_daily_consumption_kwh`, `minimum`, `maximum`, `records_count`, and memos) for a custom date range.
+   - **Parameters**:
+     - `start_date` (string, required): Range start date in `YYYY-MM-DD` format.
+     - `end_date` (string, required): Range end date in `YYYY-MM-DD format`.
+
+### Complete Tool Execution Flow
+```
+User Query
+  │
+  ▼
+OpenAI Chat Completion (with tools defined & summary context injected)
+  │
+  ├─► [Summary Sufficient?] ──► Answer directly from Summary (No Tool Call)
+  │
+  └─► [Summary Insufficient]
+        │
+        ▼
+      GPT generates tool_call (e.g., get_energy_data_by_date)
+        │
+        ▼
+      Backend Validation Layer
+        ├─ Format validation (YYYY-MM-DD)
+        ├─ Calendar validity check
+        ├─ Dataset boundary check (2026-03-01 to 2026-08-31)
+        └─ Period span check (start_date <= end_date, max span)
+        │
+        ▼
+      Service / Repository Layer (Firestore / in-memory fallback)
+        │
+        ▼
+      Tool Result returned as role: "tool" message to GPT
+        │
+        ▼
+      GPT synthesizes final answer grounded in tool data
+```
+
+### Security & Architecture Rules
+- **No Direct Cloud Access**: GPT never interacts directly with Firestore or credentials. All queries pass through the application service layer.
+- **Strict Parameter Validation**: Dates are validated for regex format, valid calendar day, and dataset bounds before querying.
+- **Factual Integrity**: Missing records or dates outside the boundary return explicit error notices without fabrication.
+- **Whole-Home Consumption Limitation**: The AI Assistant explicitly acknowledges that consumption represents whole-home aggregate electricity, and user memos (e.g., "turned on AC") cannot be claimed as definitive proof of causation. Cautious language is always used:
+  - *"This coincides with your note that..."*
+  - *"This may be related to..."*
+  - *"The whole-home electricity data alone cannot prove that [appliance] caused this change."*
 
 ---
 
-## 25. Bonus Features If Implemented
+## 25. Bonus Features Status
 
-- **Function Calling / MCP Tooling**: GPT dynamically triggers direct database lookups for specific dates.
-- **Interactive Charts**: Visual time-series charts for weekly and monthly trends.
-- **CSV Export**: Download daily records and summaries as CSV.
-- **Dark Mode**: Persisted theme toggle.
+| Feature | Status | Notes |
+| :--- | :--- | :--- |
+| **Function Calling / Tool Use** | **Implemented** | 3 validated tools (`get_energy_data_by_date`, `get_energy_data_by_period`, `get_energy_statistics`) with context injection priority |
+| **Extended Summary Metrics** | **Implemented** | 10+ analytical dimensions in `GET /api/data/summary` (trends, weekday/weekend, day of week, costs) |
+| **Interactive Charts** | **Implemented** | Responsive Chart.js daily time-series chart with gradient fills |
+| **Data Export** | **Implemented** | CSV export of all daily records (`date`, `consumption_kwh`, `memo`) |
+| **Dark Mode** | **Implemented** | Persistent theme toggle stored in `localStorage` |
+

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Pydantic schemas for AI chat and conversation persistence.
 """
 
@@ -22,6 +22,7 @@ class ChatResponse(BaseModel):
     conversation_id: str = Field(..., description="Conversation session ID")
     reply: str = Field(..., description="AI assistant response")
     used_summary: bool = Field(default=True, description="Whether summary context was injected")
+    tool_calls_made: List[Dict[str, Any]] = Field(default_factory=list, description="List of Function Calling tool invocations made during this request")
     created_at: str = Field(..., description="Timestamp of the response")
 
 
