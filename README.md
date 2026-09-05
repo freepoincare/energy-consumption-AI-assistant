@@ -466,3 +466,27 @@ OpenAI Chat Completion (도구 정의 포함 & 요약 컨텍스트 주입)
 
 <br>
 </details>
+
+---
+
+## 📸 스크린샷
+
+### 전체 화면
+
+(light mode)
+<img src="./images/main_light.png">
+
+(dark mode)
+<img src="./images/main_dark.png">
+
+### 데이터 요약이 보이는 채팅 화면
+
+<img src="./images/AI-assistant_light.png">
+
+### 데이터 관리 화면
+
+<img src="./images/data_mgmt_CRUD.png">
+
+### 대화 기록 화면
+
+<img src="./images/conversation_history.png">
