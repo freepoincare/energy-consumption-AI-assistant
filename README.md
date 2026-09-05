@@ -175,8 +175,7 @@ flowchart TD
 [`app/analysis/preprocessor.py`](app/analysis/preprocessor.py) 모듈의 전처리 과정:
 1. 타임스탬프를 파싱하여 로컬 캘린더 날짜(`YYYY-MM-DD`)로 매핑.
 2. 캘린더 일자당 48개(30분 × 48 = 24시간)의 인터벌이 완전하게 존재하는지 검증.
-3. 일별 총 전력량 계산:
-   $$\text{Daily Consumption (kWh)} = \sum_{i=1}^{48} \text{consumption\_kwh}_i$$
+3. 30분 간 전력량 48개를 합산하여 일별 총 전력량 계산.  
 4. 전처리된 데이터를 `data/processed/daily_energy.csv`로 저장하여 초기 로컬 캐시 및 베이스라인으로 활용.
 
 ### 3. 데이터 유효성 검증 (Data Validation)
@@ -545,13 +544,23 @@ uvicorn app.main:app --reload --port 8000
 (dark mode)
 <img src="./images/main_dark.png">
 
+---
+
 ### 데이터 요약이 보이는 채팅 화면
 
 <img src="./images/AI-assistant_light.png">
 
+
+| ![채팅1](./images/AI-assistant_1.png) | ![채팅2](./images/AI-assistant_2.png) | ![채팅3](./images/AI-assistant_3.png) |
+| :---: | :---: | :---: |
+
+---
+
 ### 데이터 관리 화면
 
 <img src="./images/data_mgmt_CRUD.png">
+
+----
 
 ### 대화 기록 화면
 
