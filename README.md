@@ -586,7 +586,7 @@ AI 어시스턴트에게 꼭 물어보지 않아도 웹 화면에서 확인 가�
 웹 화면에서 확인 불가능한 정보에 대한 질문 예시:
 
 1. "Which month did I use the most electricity?"
-2. What was my average daily consumption during July 2026?
+2. "What was my average daily consumption during July 2026?"
 3. "What was my average consumption between April 1 and May 15, 2026?"
 4. "How much electricity did I use between June 1 and June 15?"
 5. "How much did I consume during the first two weeks of August?"
