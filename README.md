@@ -526,18 +526,7 @@ sequenceDiagram
 
 먼저 Render설정 후에 Vercel에 배포하였다. 그런 다음, `https://<my-vercel-app>.vercel.app` 을 Render의 `ALLOWED_ORIGINS`에 입력하였다.
 
-### 1) 🌐 Vercel 프론트엔드 배포 (Vercel Deployment)
-
-[`vercel.json`](vercel.json) 설정을 통해 [Vercel](https://vercel.com)에 정적 사이트로 배포한다:
-1. Vercel 대시보드에서 저장소를 Import한다.
-2. Root Directory를 `frontend`로 지정하거나 기본 경로를 유지한다.
-3. `frontend/config.js`의 `window.API_BASE_URL` 값을 Render 백엔드 주소로 지정한다:
-   ```javascript
-   window.API_BASE_URL = "https://energy-consumption-ai-assistant.onrender.com";
-   ```
-4. 배포 후 백엔드와의 CORS 연동 및 실시간 데이터 호출을 확인한다.
-
-### 2) ☁️ Render 백엔드 배포 (Render Deployment)
+### 1) ☁️ Render 백엔드 배포 (Render Deployment)
 
 [`render.yaml`](render.yaml) 파일이 포함되어 있어 [Render](https://render.com)에 원클릭 배포가 가능하다:
 1. Render 대시보드에서 깃허브 저장소를 **Web Service**로 연결한다.
@@ -549,14 +538,25 @@ sequenceDiagram
    - `OPENAI_API_KEY`: 실제 발급받은 OpenAI API 키
    - `OPENAI_MODEL`: `gpt-4o-mini`
    - `FIREBASE_SERVICE_ACCOUNT_JSON`: 다운로드한 서비스 계정 JSON 전체 내용 `{...}`
-   - `ALLOWED_ORIGINS`: `https://<my-vercel-app>.vercel.app`
-   - `ENVIRONMENT`: `production`
+   - `ALLOWED_ORIGINS`: Vercel 배포 전 `http://localhost:3000` → Vercel 배포 후 `https://<my-vercel-app>.vercel.app`
+   - `ENVIRONMENT`: `production` (`.env` 에는 `ENVIRONMENT=development`)
+
+### 2) 🌐 Vercel 프론트엔드 배포 (Vercel Deployment)
+
+[`vercel.json`](vercel.json) 설정을 통해 [Vercel](https://vercel.com)에 정적 사이트로 배포한다:
+1. Vercel 대시보드에서 저장소를 Import한다.
+2. Root Directory를 `frontend`로 지정하거나 기본 경로를 유지한다.
+3. `frontend/config.js`의 `window.API_BASE_URL` 값을 Render 백엔드 주소로 지정한다:
+   ```javascript
+   window.API_BASE_URL = "https://energy-consumption-ai-assistant.onrender.com";
+   ```
+4. 배포 후 백엔드와의 CORS 연동 및 실시간 데이터 호출을 확인한다.
 
 ### 3) 📖 Swagger UI API 문서 (Swagger UI)
 
 FastAPI는 OpenAPI 표준 규격을 준수하여 인터랙티브 문서 페이지를 자동 생성한다:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
+- **Swagger UI**: `http://localhost:8000/docs`(로컬); `https://energy-consumption-ai-assistant.onrender.com/docs`(배포)
+- **ReDoc**: `http://localhost:8000/redoc`(로컬); `https://energy-consumption-ai-assistant.onrender.com/redoc`(배포)
 
 브라우저에서 직접 CRUD 엔드포인트를 호출하고 요청/응답 스키마를 테스트할 수 있다.
 
