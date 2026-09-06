@@ -21,7 +21,7 @@ from app.analysis.summary import generate_energy_summary
 from app.analysis.preprocessor import process_raw_file
 from app.database.firestore import get_firestore_db, is_firestore_mock
 
-
+# 데이터 창고 관리: 데이터베이스(Firestore)와 직접 소통하며 데이터를 넣고 뺌. 데이터를 어떻게 저장할 것인가(Repository)
 class FirestoreEnergyRepository:
     """
     Repository managing daily electricity consumption documents in Firestore 'data' collection.
@@ -183,7 +183,7 @@ class FirestoreEnergyRepository:
 # Service instantiation
 repository = FirestoreEnergyRepository()
 
-
+# 서비스 데스크: 라우터가 호출하는 실제 인터페이스. 데이터를 사용자에게 보여주기 좋게 예쁘게 포장. 데이터를 어떻게 서비스할 것인가(Service)
 class EnergyDataService:
     @staticmethod
     def list_energy_data() -> EnergyDataListResponse:

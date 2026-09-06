@@ -85,8 +85,8 @@ electricity-consumption-AI-assistant/
 │   └── processed/                    # 일별 집계 완료된 베이스라인 CSV 데이터셋
 │       └── daily_energy.csv
 ├── frontend/                         # 바닐라 프론트엔드 (Vercel 배포)
-│   ├── api.js                        # 백엔드 연동 비동기 fetch API 클라이언트 모듈
-│   ├── app.js                        # DOM 이벤트, 상태 관리, Chart.js 렌더링, 모달 제어
+│   ├── api.js                        # 서버와 통신 담당, 백엔드 연동 비동기 fetch API 클라이언트 모듈
+│   ├── app.js                        # 화면(UI) 제어, 상태 관리, Chart.js 렌더링, 모달 제어, 사용자 클릭 반응
 │   ├── config.js                     # 백엔드 API BASE URL 전역 런타임 설정
 │   ├── index.html                    # 대시보드 단일 페이지 구조 (SPA)
 │   └── style.css                     # 스타일시트 (다크/라이트 테마 변수, 반응형 레이아웃)
@@ -97,6 +97,8 @@ electricity-consumption-AI-assistant/
 ├── requirements.txt                  # 파이썬 런타임 의존성 패키지 목록
 └── vercel.json                       # Vercel 정적 사이트 프론트엔드 라우팅 및 빌드 설정
 ```
+
+> FastAPI 프로젝트는 API 요청을 처리하는 **Router**, 실제 비즈니스 로직을 담당하는 **Service**, 데이터 저장 및 조회를 담당하는 **Repository/Database Layer**로 역할을 분리함. Router에는 HTTP 요청과 응답 처리만 두고, 전력 사용량 분석이나 데이터 처리와 같은 핵심 로직은 Service에서 담당하도록 구성함. 이를 통해 각 기능의 책임을 명확하게 하고 코드의 재사용성과 유지보수성을 높임. 또한 특정 데이터베이스나 외부 API가 변경되더라도 다른 계층에 미치는 영향을 최소화할 수 있도록 설계.
 
 ---
 

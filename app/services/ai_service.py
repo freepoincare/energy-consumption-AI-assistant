@@ -403,7 +403,7 @@ class AIChatService:
                 {"role": "user", "content": request.message}
             ]
 
-            tool_calls_log: List[Dict[str, Any]] = []
+            tool_calls_log: List[Dict[str, Any]] = []   # tool 호출 기록 저장용 리스트
 
             # Function Calling loop (max 3 iterations to prevent infinite loops)
             max_iterations = 3
@@ -411,23 +411,23 @@ class AIChatService:
                 response = client.chat.completions.create(
                     model=settings.OPENAI_MODEL,
                     messages=messages,
-                    tools=TOOL_DEFINITIONS,
-                    tool_choice="auto",
-                    temperature=0.1,
-                    max_tokens=800
+                    tools=TOOL_DEFINITIONS,     # AI에게 사용 가능한 함수 목록을 알려줌 (AI가 실행하는 것이 아닌, 특정 함수를 호출하고 싶다고 요청만 함. 실제 실행은 서버 코드가 함.)
+                    tool_choice="auto",         # AI가 알아서 판단
+                    temperature=0.1,            # 답변의 랜덤성/창의성 낮춤. 낮을수록 더 안정적/일관된 답변. 데이터 분석/조회에는 낮은 값. 
+                    max_tokens=800              # 응답 길이 제한
                 )
 
-                assistant_message = response.choices[0].message
+                assistant_message = response.choices[0].message     # AI 이번 턴 답변; assistant_message에는 AI 일반 답변(content) 또는 호출 정보(tool_calls)가 있을 수 있음 
 
-                tool_calls = getattr(assistant_message, "tool_calls", None)
+                tool_calls = getattr(assistant_message, "tool_calls", None)     # assistant_message.tool_calls가 있으면 가져옴
 
-                # If no tool calls, we have the final answer
+                # If no tool calls, we have the final answer. AI가 tool을 요청하지 않았다면 이미 최종 답변을 했다는 뜻
                 if not tool_calls:
                     reply = assistant_message.content.strip() if assistant_message.content else ""
                     break
 
                 # Process tool calls
-                # Append assistant message with tool_calls to conversation
+                # Append assistant message with tool_calls to conversation. AI가 “함수를 호출하고 싶다”고 한 내용을 대화 기록에 추가
                 messages.append({
                     "role": "assistant",
                     "content": assistant_message.content or "",
@@ -436,7 +436,7 @@ class AIChatService:
                             "id": tc.id,
                             "type": "function",
                             "function": {
-                                "name": tc.function.name,
+                                "name": tc.function.name,       # e.g.) "get_energy_statistics"
                                 "arguments": tc.function.arguments
                             }
                         }
@@ -444,8 +444,8 @@ class AIChatService:
                     ]
                 })
 
-                for tool_call in assistant_message.tool_calls:
-                    func_name = tool_call.function.name
+                for tool_call in assistant_message.tool_calls:      # tool_call이 보통 1개겠지만, 여러 개일 가능성도 있으므로 반복문
+                    func_name = tool_call.function.name             # e.g.) "get_energy_data_by_date", "get_energy_statistics"
                     try:
                         func_args = json.loads(tool_call.function.arguments)
                     except json.JSONDecodeError:
@@ -454,13 +454,13 @@ class AIChatService:
                     logger.info(f"Tool call: {func_name}({func_args})")
 
                     # Execute the tool
-                    executor = TOOL_EXECUTORS.get(func_name)
+                    executor = TOOL_EXECUTORS.get(func_name)        # TOOL_EXECUTORS는 보통 함수 이름 → 실제 실행 함수를 연결한 딕셔너리
                     if executor:
-                        result = executor(func_args)
+                        result = executor(func_args)                # 실제 함수 호출
                     else:
                         result = {"error": f"Unknown tool '{func_name}'."}
 
-                    # Log the tool call
+                    # Log the tool call. 어떤 tool이 호출되었는지 기록 리스트에 추가 (나중에 API 응답에 포함할 수도 있고, 디버깅에도 사용)
                     tool_calls_log.append({
                         "tool": func_name,
                         "arguments": func_args,

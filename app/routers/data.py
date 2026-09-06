@@ -18,19 +18,19 @@ from app.models.data_models import (
 )
 from app.services.data_service import EnergyDataService
 
-router = APIRouter(prefix="/api/data", tags=["Energy Data"])
+router = APIRouter(prefix="/api/data", tags=["Energy Data"])    # APIRouter: API 엔드포인트(경로)를 기능별로 나누고 모듈화하는 도구
 
 
 @router.get(
     "/summary",
-    response_model=SummaryResponse,
+    response_model=SummaryResponse,         # 응답 스키마 지정
     status_code=status.HTTP_200_OK,
     summary="Get Energy Consumption Summary",
     description="Returns aggregated statistical summary (period, averages, trends, extremes) used for AI context injection."
 )
 async def get_energy_summary():
     try:
-        return EnergyDataService.get_summary()
+        return EnergyDataService.get_summary()     # router가 service 호출
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
