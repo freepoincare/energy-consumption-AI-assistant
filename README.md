@@ -35,20 +35,20 @@
 
 ### 1. 🤖 데이터 기반 AI 챗봇 및 지능형 분석 (Context Injection & Function Calling)
 * **컨텍스트 주입 (Context Injection)**: 데이터베이스의 최신 요약 지표(총 소비량, 일평균, 극값, 월별/요일별 패턴, 추세 등)를 산출하여 System Prompt에 실시간 주입함으로써, 모델이 사용자의 전력 소비 패턴을 바탕으로 답변.
-* **OpenAI 도구 호출 (Function Calling)**: 요약본에 포함되지 않은 특정 단일 날짜(예: `2026-08-12`), 커스텀 기간(예: `6월 1일 ~ 6월 15일`), 또는 사용자 메모 조회가 필요한 질문에 대해 백엔드 도구(`get_energy_data_by_date`, `get_energy_data_by_period`, `get_energy_statistics`)를 선별적으로 호출하여 사실 기반의 데이터를 제공. (아래 그림 1 참고)
+* **OpenAI 도구 호출 (Function Calling)**: 요약본에 포함되지 않은 특정 단일 날짜(예: `2026-08-13`), 커스텀 기간(예: `6월 1일 ~ 6월 15일`), 또는 사용자 메모 조회가 필요한 질문에 대해 백엔드 도구(`get_energy_data_by_date`, `get_energy_data_by_period`, `get_energy_statistics`)를 선별적으로 호출하여 사실 기반의 데이터를 제공. (아래 [그림 1](#function-calling) 참고)
 * **환각 방지 (Anti-Hallucination Guardrails)**: 주입된 데이터와 도구 반환값에만 의존하여 답변하며, 임의 수치 날조를 방지.
 
 ### 2. 📊 전력 데이터 관리 (CRUD & Server-side Data Aggregation)
-* **대용량 시계열 원시 데이터 사전 집계**: 스마트미터의 30분 단위 인터벌 원시 데이터를 로컬 달력 기준 일별 합계(kWh)로 전처리하여 집계.
+* **시계열 원시 데이터 사전 집계**: 스마트미터의 30분 단위 인터벌 원시 데이터를 로컬 달력 기준 일별 합계(kWh)로 전처리하여 집계.
 * **완전한 일별 레코드 CRUD**: 날짜별 전력 소비량(`date`, `value`) 및 메모(`memo`)를 등록, 조회, 수정, 삭제할 수 있는 직관적인 인터페이스와 API를 제공.
 * **Pydantic 스키마 검증**: 날짜 정규식(`YYYY-MM-DD`), 실제 캘린더 일자 검증, 음수 소비량 차단(`ge=0.0`), 메모 길이 제한(`max_length=500`)으로 데이터 무결성을 보장.
 
 ### 3. 💬 대화 기록 관리 (Conversation History)
-* **대화 세션 영구 저장**: AI와의 질의응답 교환이 발생할 때마다 Google Cloud Firestore의 `conversations` 컬렉션에 자동 저장됨.
+* **대화 세션 저장**: AI와의 질의응답 교환이 발생할 때마다 Google Cloud Firestore의 `conversations` 컬렉션에 자동 저장됨.
 * **대화 불러오기 및 세션 전환**: 화면 좌측 대화 내역 사이드바를 통해 이전 상담 내역을 원클릭으로 다시 불러와 확인하고, 불필요한 대화는 삭제 가능.
 
 ### 4. 📈 시각화 및 사용자 경험 (UX & Bonus Features)
-* **시계열 차트**: Chart.js를 기반으로 일별 전력 소비 추세를 확인할 수 있는 반응형 그래프 제공.
+* **시계열 차트**: Chart.js를 기반으로 일별 전력 소비 추세를 확인할 수 있는 그래프 제공.
 * **데이터 내보내기 (Export CSV)**: 저장된 전체 일별 전력 레코드(`date`, `consumption_kwh`, `memo`)를 CSV 파일로 다운로드.
 * **다크 / 라이트 모드 지원**: 사용자 시스템 및 선호에 맞춘 테마 토글을 제공하며 `localStorage`와 연동되어 새로고침 후에도 유지.
 * **모바일 및 데스크톱 반응형 UI**: 순수 Vanilla HTML5/CSS3/JavaScript(ES6)로 제작되어 브라우저에서 가볍고 빠르게 동작.
@@ -56,7 +56,9 @@
 ---
 
 <div title="💡사용자가 웹 대시보드에서 질문을 입력했을 때, 백엔드(`app/services/ai_service.py`)가 OpenAI API와 통신하며 도구를 호출하는 다이어그램">
+
 <figure>
+<figure id="function-calling">
 
 ```mermaid
 sequenceDiagram
@@ -82,6 +84,7 @@ sequenceDiagram
 ```
 
 <figcaption align="center">그림 1 - Function Calling 실행 흐름</figcaption>
+
 </figure>
 </div>
 
@@ -109,7 +112,7 @@ electricity-consumption-AI-assistant/
 │   ├── services/                     # 비즈니스 로직 및 외부 연동 서비스
 │   │   ├── ai_service.py             # OpenAI GPT 연동, 프롬프트 주입 및 Function Calling 실행
 │   │   ├── conversation_service.py   # Firestore 대화 기록 저장 및 관리
-│   │   └── data_service.py           # 전력 데이터 조회/등록/수정/삭제 및 초기 시드 관리
+│   │   └── data_service.py           # 전력 데이터 조회/등록/수정/삭제 관리
 │   └── main.py                       # FastAPI 애플리케이션 진입점, CORS 및 미들웨어 설정
 ├── data/
 │   ├── raw/                          # 30분 단위 원시 CSV 데이터셋
@@ -499,7 +502,6 @@ sequenceDiagram
 | **Data Analysis** | **Pandas** (`2.2+`) | 30분 단위 시계열 데이터 전처리, 일별 집계 및 다차원 통계 엔진 구현 |
 | **Frontend** | **Vanilla HTML5, CSS3, ES6 JavaScript** | 프레임워크 없는 경량 단일 페이지(SPA) 대시보드, 다크/라이트 테마, Fetch API 통신 |
 | **Data Visualization** | **Chart.js** (CDN) | 반응형 시계열 꺾은선 차트 시각화 (일별 전력 소비량 추세 분석) |
-| **Testing** | **pytest & HTTPX** | 단위 테스트, Firestore 모킹 격리 테스트, 통합 API 테스트 자동화 (80+ 테스트 케이스) |
 | **Cloud Hosting** | **Render (Backend)** / **Vercel (Frontend)** | 백엔드 Web Service 컨테이너 호스팅 및 프론트엔드 글로벌 정적 엣지 배포 |
 
 ---
@@ -567,26 +569,20 @@ FastAPI는 OpenAPI 표준 규격을 준수하여 인터랙티브 문서 페이�
 ## 💻 로컬 개발 환경 실행 (Local Setup)
 
 ```bash
-# 1) 저장소 복제 및 가상환경 구성
-git clone <repo-url>
+git clone <repo-url>                          # 저장소 복제
 cd <repo-name>
-python -m venv .venv
-source .venv/bin/activate       # macOS / Linux
-.\.venv\Scripts\Activate.ps1    # Windows PowerShell
 
-# 2) 의존성 패키지 설치
-pip install -r requirements.txt
+python -m venv .venv                          # 가상환경 구성
+source .venv/bin/activate                     # macOS / Linux (Windows PowerShell는 .\.venv\Scripts\Activate.ps1)
 
-# 3) 환경 변수 설정
-cp .env.example .env            # .env 파일에 OPENAI_API_KEY 및 Firebase 설정 입력
-
-# 4) 백엔드 서버 구동
-uvicorn app.main:app --reload --port 8000
+pip install -r requirements.txt               # 의존성 패키지 설치
+cp .env.example .env                          # 환경 변수 설정; .env 파일에 OPENAI_API_KEY 및 Firebase 설정 입력
+uvicorn app.main:app --reload --port 8000     # 백엔드 서버 구동
 ```
 
 위 절차를 따른 후,
 - 웹 대시보드 접속: `http://localhost:8000/`
-- 헬스체크: `http://localhost:8000/health` (`"status":"healthy"`나오면 ok)
+- Health 체크: `http://localhost:8000/health` (`"status":"healthy"`나오면 ok)
 - Swagger API 문서: `http://localhost:8000/docs`
 
 ---
