@@ -23,7 +23,7 @@
 
 **💡Electricity Consumption AI Assistant💡**는 전력 소비 시계열 데이터를 LLM이 정확하고 효율적으로 활용하여 대화를 할 수 있도록 설계한 데이터 기반 AI 에너지 어시스턴트이다.
 
-수천~수만 행의 전력 데이터를 LLM에 직접 전달하면 Context Window 초과, 높은 API 비용, 응답 지연, Hallucination 등의 문제가 발생할 수 있다. 이를 해결하기 위해 서버에서 전력 데이터를 일별·요일별·기간별 통계로 사전 집계하고, 핵심 요약 정보를 LLM에 동적으로 주입한다.
+수천~수만 행의 전력 데이터를 LLM에 직접 전달하면 Context Window 초과, 높은 API 비용, 응답 지연, Hallucination 등의 문제가 발생할 수 있기 때문에, 서버에서 전력 데이터를 일별·요일별·기간별 통계로 사전 집계하고, 핵심 요약 정보를 LLM에 주입한다.
 
 요약 데이터만으로 답하기 어려운 특정 날짜 및 기간의 상세 질의는 Function Calling을 통해 필요한 데이터만 조회하여 답변을 생성한다.
 
@@ -35,7 +35,7 @@
 
 ### 1. 🤖 데이터 기반 AI 챗봇 및 지능형 분석 (Context Injection & Function Calling)
 * **컨텍스트 주입 (Context Injection)**: 데이터베이스의 최신 요약 지표(총 소비량, 일평균, 극값, 월별/요일별 패턴, 추세 등)를 산출하여 System Prompt에 실시간 주입함으로써, 모델이 사용자의 전력 소비 패턴을 바탕으로 답변.
-* **OpenAI 도구 호출 (Function Calling)**: 요약본에 포함되지 않은 특정 단일 날짜(예: `2026-08-12`), 커스텀 기간(예: `6월 1일 ~ 6월 15일`), 또는 사용자 메모 조회가 필요한 질문에 대해 백엔드 도구(`get_energy_data_by_date`, `get_energy_data_by_period`, `get_energy_statistics`)를 선별적으로 호출하여 사실 기반의 데이터를 제공.
+* **OpenAI 도구 호출 (Function Calling)**: 요약본에 포함되지 않은 특정 단일 날짜(예: `2026-08-12`), 커스텀 기간(예: `6월 1일 ~ 6월 15일`), 또는 사용자 메모 조회가 필요한 질문에 대해 백엔드 도구(`get_energy_data_by_date`, `get_energy_data_by_period`, `get_energy_statistics`)를 선별적으로 호출하여 사실 기반의 데이터를 제공. (아래 그림 1 참고)
 * **환각 방지 (Anti-Hallucination Guardrails)**: 주입된 데이터와 도구 반환값에만 의존하여 답변하며, 임의 수치 날조를 방지.
 
 ### 2. 📊 전력 데이터 관리 (CRUD & Server-side Data Aggregation)
@@ -52,6 +52,38 @@
 * **데이터 내보내기 (Export CSV)**: 저장된 전체 일별 전력 레코드(`date`, `consumption_kwh`, `memo`)를 CSV 파일로 다운로드.
 * **다크 / 라이트 모드 지원**: 사용자 시스템 및 선호에 맞춘 테마 토글을 제공하며 `localStorage`와 연동되어 새로고침 후에도 유지.
 * **모바일 및 데스크톱 반응형 UI**: 순수 Vanilla HTML5/CSS3/JavaScript(ES6)로 제작되어 브라우저에서 가볍고 빠르게 동작.
+
+---
+
+<div title="💡사용자가 웹 대시보드에서 질문을 입력했을 때, 백엔드(`app/services/ai_service.py`)가 OpenAI API와 통신하며 도구를 호출하는 다이어그램">
+<figure>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 사용자 (웹 대시보드 UI)
+    participant Backend as FastAPI 백엔드 (ai_service.py)
+    participant OpenAI as OpenAI GPT-4o-mini API
+    participant Store as Firestore / Repository
+
+    User->>Backend: 1. POST /api/chat ("8월 13일 전력 사용량은?")
+    Backend->>Store: 2. 최신 요약 데이터 및 도구 스키마 준비
+    Backend->>OpenAI: 3. System Prompt (요약 주입) + tools 정의 목록 전송
+    Note over OpenAI: 요약본만으로 부족 판단<br/>(특정 날짜 세부 조회 필요)
+    OpenAI-->>Backend: 4. tool_call 요청 (get_energy_data_by_date, date="2026-08-13")
+    Backend->>Backend: 5. 백엔드 인자 유효성 검증 (YYYY-MM-DD, 범위 체크)
+    Backend->>Store: 6. get_by_id("2026-08-13") 실행
+    Store-->>Backend: 7. 레코드 반환 (1.745 kWh, memo: null)
+    Backend->>OpenAI: 8. role: "tool" 결과 메시지 반환
+    Note over OpenAI: 반환된 실제 측정 데이터를 기반으로 최종 답변 합성
+    OpenAI-->>Backend: 9. "Your electricity consumption on 2026-08-13 was 1.745 kWh."
+    Backend->>Store: 10. 대화 세션 자동 저장 (conversations 컬렉션)
+    Backend-->>User: 11. 200 OK {"reply": "Your electricity consumption...", ...}
+```
+
+<figcaption align="center">그림 1 - Function Calling 실행 흐름</figcaption>
+</figure>
+</div>
 
 ---
 
@@ -102,7 +134,9 @@ electricity-consumption-AI-assistant/
 
 ---
 
-## 📐 아키텍처 다이어그램 (Architecture Diagram)
+<details>
+<summary>[프로그램 흐름도]</summary>
+<br>
 
 ```mermaid
 flowchart TD
@@ -152,6 +186,9 @@ flowchart TD
 
     Router_Conv --> Service_Conv
 ```
+
+<br>
+</details>
 
 ---
 
@@ -407,15 +444,7 @@ sequenceDiagram
     Backend-->>User: 11. 200 OK {"reply": "Your electricity consumption...", ...}
 ```
 
-#### 4) 안전성 및 인과관계 가드레일 (Causation Guardrails)
-- **클라우드 직접 접근 금지**: GPT는 Firestore나 자격 증명에 절대 직접 접근하지 않으며 항상 백엔드 서비스 레이어를 경유.
-- **엄격한 파라미터 검증**: 모든 인자는 정규식, 유효 일자, 데이터 경계 체크를 통과해야 함.
-- **사용자 메모와의 인과관계 주의**: "에어컨을 틀었다"는 메모가 있더라도, 전력 사용량 데이터만으로는 에어컨이 전력 증가의 유일한 원인임을 확정할 수 없음. 따라서 AI 어시스턴트는 항상 신중한 어조를 유지:
-  - *"이 시기는 메모에 남겨주신 내용과 일치합니다..."*
-  - *"이와 관련된 요인일 수 있습니다..."*
-  - *"가구 전체 전력 데이터만으로는 특정 가전제품이 소비량 증가의 직접적인 원인이라고 단정할 수는 없습니다."*
-
-#### 5) 🔌 외부 멀티채널 연동 (GPT Actions 연동 가이드)
+#### 4) 🔌 외부 멀티채널 연동 (GPT Actions 연동 가이드)
 본 프로젝트의 백엔드 API는 FastAPI를 기반으로 **OpenAPI 3.1 표준 규격**을 자동 생성한다. 이를 통해 웹 대시보드뿐만 아니라 OpenAI ChatGPT의 **Custom GPTs (GPT Actions)** 와 연동하여 외부 대화 채널에서도 전력 분석 도구를 직접 HTTP로 호출할 수 있다.
 
 * **OpenAPI Schema URL**: `https://energy-consumption-ai-assistant.onrender.com/openapi.json`
@@ -444,6 +473,14 @@ sequenceDiagram
     Note over GPT: 반환된 실제 측정 데이터를 기반으로 답변 생성
     GPT-->>User: 6. "2026년 8월 13일 전력 소비량은 1.745 kWh였습니다."
 ```
+
+#### 5) 안전성 및 인과관계 가드레일 (Causation Guardrails)
+- **클라우드 직접 접근 금지**: GPT는 Firestore나 자격 증명에 절대 직접 접근하지 않으며 항상 백엔드 서비스 레이어를 경유.
+- **엄격한 파라미터 검증**: 모든 인자는 정규식, 유효 일자, 데이터 경계 체크를 통과해야 함.
+- **사용자 메모와의 인과관계 주의**: "에어컨을 틀었다"는 메모가 있더라도, 전력 사용량 데이터만으로는 에어컨이 전력 증가의 유일한 원인임을 확정할 수 없음. 따라서 AI 어시스턴트는 항상 신중한 어조를 유지:
+  - *"이 시기는 메모에 남겨주신 내용과 일치합니다..."*
+  - *"이와 관련된 요인일 수 있습니다..."*
+  - *"가구 전체 전력 데이터만으로는 특정 가전제품이 소비량 증가의 직접적인 원인이라고 단정할 수는 없습니다."*
 
 <br>
 </details>
