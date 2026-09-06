@@ -273,6 +273,8 @@ class DailyEnergyRecord(BaseModel):
 | **Bonus** | **데이터 내보내기 (Export CSV)** | 저장된 전체 일별 전력 레코드(`date`, `consumption_kwh`, `memo`)의 CSV 파일 다운로드 |
 | **Bonus** | **다크 / 라이트 모드** | `localStorage`와 동기화되는 지속형 테마 토글 버튼 제공 |
 
+---
+
 ### 🚀 FastAPI 엔드포인트 명세 (API Endpoints)
 
 | 분류 | HTTP Method | 경로 (Path) | 설명 | 응답 코드 |
@@ -291,6 +293,9 @@ class DailyEnergyRecord(BaseModel):
 | | `POST` | `/api/conversations` | 신규 대화 세션 생성 | `201 Created` |
 | | `GET` | `/api/conversations/{id}` | 특정 대화 세션 전체 메시지 히스토리 조회 | `200 OK / 404` |
 | | `DELETE` | `/api/conversations/{id}`| 특정 대화 세션 삭제 | `200 OK / 404` |
+
+
+---
 
 ### 🗄️ Firestore 데이터 구조 (Firestore Structure)
 
@@ -321,6 +326,8 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
     - `content`: string (메시지 본문)
     - `timestamp`: string (ISO 8601 타임스탬프)
 
+---
+
 ### 💉 Context Injection & Anti-Hallucination 규칙
 
 [`app/services/ai_service.py`](app/services/ai_service.py)에 구현된 프롬프트 주입 및 가드레일:
@@ -333,15 +340,19 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
    - 전력 단위는 반드시 `kWh` 또는 `kWh/day`를 사용한다.
    - 모든 비용은 확정 고지서가 아닌 '추정 비용(Estimated Cost)'임을 명시한다.
 
+---
+
 ### 💬 대화 기록 관리 (Conversation History)
 
 - 사용자가 AI 어시스턴트와 메시지를 주고받을 때마다 `ConversationService.record_chat_exchange()`를 통해 세션 및 메시지가 영구 기록된다.
 - 좌측 대화 히스토리 사이드바(`GET /api/conversations`)에서 이전 세션을 클릭하여 과거 대화를 이어갈 수 있다.
 - 불필요한 세션은 삭제 버튼(`DELETE /api/conversations/{id}`)을 통해 간편하게 정리할 수 있다.
 
+---
+
 ### 🖥️ 프론트엔드 대시보드 (Frontend Architecture)
 
-빌드 도구나 무거운 프레임워크 없이 표준 **HTML5, CSS3, Vanilla JavaScript (ES6)**로 구축되었다:
+빌드 도구나 프레임워크 없이 표준 HTML5, CSS3, Vanilla JavaScript (ES6)로 구축되었다:
 - **구성 요소**:
   - [`frontend/index.html`](frontend/index.html): 단일 페이지 레이아웃 (대화 내역 사이드바, AI 채팅창, 핵심 통계 카드, 일별 전력 CRUD 테이블, Chart.js 시각화).
   - [`frontend/style.css`](style.css): 반응형 디자인, CSS 변수 기반 다크 모드/라이트 모드 테마, 부드러운 애니메이션.
@@ -349,6 +360,8 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
   - [`frontend/api.js`](frontend/api.js): `fetch` API 기반의 통합 REST API 클라이언트 모듈.
   - [`frontend/app.js`](frontend/app.js): DOM 조작, 실시간 차트 렌더링, 채팅 전송, CRUD 모달 제어.
 - **가벼운 구조**: React, Vue, Next.js 등의 프레임워크나 빌드 번들러 의존성이 없음.
+
+---
 
 ### 🛠️ Function Calling & Tool Use 상세 구조
 
@@ -358,44 +371,40 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
 
 #### 2) 도구 목록 및 역할
 1. `get_energy_data_by_date`:
-   - **설명: 특정 날짜의 실제 일별 전력 소비량(`date`, `consumption_kwh`, `memo`)을 조회.
-   - **매개변수: `date` (`YYYY-MM-DD`, 필수)
-2. `get_energy_data_by_period`**:
+   - 설명: 특정 날짜의 실제 일별 전력 소비량(`date`, `consumption_kwh`, `memo`)을 조회.
+   - 매개변수: `date` (`YYYY-MM-DD`, 필수)
+2. `get_energy_data_by_period`:
    - 설명: 지정된 기간(시작일~종료일)의 일별 레코드 목록과 함께 사전 집계된 `total_consumption_kwh`, `average_daily_consumption_kwh`를 반환.
    - 매개변수: `start_date`, `end_date` (`YYYY-MM-DD`, 필수)
 3. `get_energy_statistics`:
    - 설명: 커스텀 기간에 대한 결정론적 통계(`total_consumption_kwh`, `average_daily_consumption_kwh`, `minimum`, `maximum`, `records_count`)를 계산하여 반환. LLM이 수동으로 십진수 덧셈을 수행하다 계산 실수를 하지 않도록 파이썬 레벨에서 정밀하게 합산.
    - 매개변수: `start_date`, `end_date` (`YYYY-MM-DD`, 필수)
 
-#### 3) 도구 실행 흐름
-```
-사용자 질문 (User Query)
-  │
-  ▼
-OpenAI Chat Completion (도구 정의 포함 & 요약 컨텍스트 주입)
-  │
-  ├─► [요약으로 충분한 경우] ──► 요약 데이터 기반 직접 답변 (도구 호출 없음)
-  │
-  └─► [요약으로 불충분한 경우]
-        │
-        ▼
-      GPT가 tool_call 생성 (예: get_energy_data_by_date, get_energy_statistics)
-        │
-        ▼
-      백엔드 검증 레이어 (Backend Validation Layer)
-        ├─ 포맷 검증 (YYYY-MM-DD 정규식)
-        ├─ 유효 캘린더 날짜 검증
-        ├─ 데이터셋 경계 검증 (2026-03-01 ~ 2026-08-31)
-        └─ 기간 유효성 검증 (start_date <= end_date, 최대 조회 범위)
-        │
-        ▼
-      서비스 / 저장소 레이어 (Firestore / 인메모리 로컬 스토어)
-        │
-        ▼
-      실행 결과를 role: "tool" 메시지로 GPT에 반환
-        │
-        ▼
-      GPT가 도구 데이터를 바탕으로 사실에 입각한 최종 답변 생성
+#### 3) 웹 앱 내부 Function Calling 실행 흐름 (Internal Tool Execution)
+
+사용자가 웹 대시보드에서 질문을 입력했을 때, 백엔드(`app/services/ai_service.py`)가 OpenAI API와 통신하며 도구를 호출하고 결과를 검증·합성하는 다이어그램:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 사용자 (웹 대시보드 UI)
+    participant Backend as FastAPI 백엔드 (ai_service.py)
+    participant OpenAI as OpenAI GPT-4o-mini API
+    participant Store as Firestore / Repository
+
+    User->>Backend: 1. POST /api/chat ("8월 13일 전력 사용량은?")
+    Backend->>Store: 2. 최신 요약 데이터 및 도구 스키마 준비
+    Backend->>OpenAI: 3. System Prompt (요약 주입) + tools 정의 목록 전송
+    Note over OpenAI: 요약본만으로 부족 판단<br/>(특정 날짜 세부 조회 필요)
+    OpenAI-->>Backend: 4. tool_call 요청 (get_energy_data_by_date, date="2026-08-13")
+    Backend->>Backend: 5. 백엔드 인자 유효성 검증 (YYYY-MM-DD, 범위 체크)
+    Backend->>Store: 6. get_by_id("2026-08-13") 실행
+    Store-->>Backend: 7. 레코드 반환 (1.745 kWh, memo: null)
+    Backend->>OpenAI: 8. role: "tool" 결과 메시지 반환
+    Note over OpenAI: 반환된 실제 측정 데이터를 기반으로 최종 답변 합성
+    OpenAI-->>Backend: 9. "Your electricity consumption on 2026-08-13 was 1.745 kWh."
+    Backend->>Store: 10. 대화 세션 자동 저장 (conversations 컬렉션)
+    Backend-->>User: 11. 200 OK {"reply": "Your electricity consumption...", ...}
 ```
 
 #### 4) 안전성 및 인과관계 가드레일 (Causation Guardrails)
@@ -405,6 +414,36 @@ OpenAI Chat Completion (도구 정의 포함 & 요약 컨텍스트 주입)
   - *"이 시기는 메모에 남겨주신 내용과 일치합니다..."*
   - *"이와 관련된 요인일 수 있습니다..."*
   - *"가구 전체 전력 데이터만으로는 특정 가전제품이 소비량 증가의 직접적인 원인이라고 단정할 수는 없습니다."*
+
+#### 5) 🔌 외부 멀티채널 연동 (GPT Actions 연동 가이드)
+본 프로젝트의 백엔드 API는 FastAPI를 기반으로 **OpenAPI 3.1 표준 규격**을 자동 생성한다. 이를 통해 웹 대시보드뿐만 아니라 OpenAI ChatGPT의 **Custom GPTs (GPT Actions)** 와 연동하여 외부 대화 채널에서도 전력 분석 도구를 직접 HTTP로 호출할 수 있다.
+
+* **OpenAPI Schema URL**: `https://energy-consumption-ai-assistant.onrender.com/openapi.json`
+* **연동 절차 (How to Connect)**:
+  1. ChatGPT → `Explore GPTs` → `+ Create` 접속
+  2. `Configure` 탭 하단의 **Actions → Create new action** 선택
+  3. **Import from URL**을 클릭하고 `https://energy-consumption-ai-assistant.onrender.com/openapi.json` 입력
+  4. 자동으로 가져온 엔드포인트(`GET /api/data/summary`, `GET /api/data/{id}`, `GET /api/data` 등)를 확인하고 Actions 등록 완료
+  5. ChatGPT 대화창에서 질문을 입력하여 외부 도구 호출 흐름을 검증
+
+##### 외부 GPT Actions 호출 흐름 (Sequence Diagram)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 사용자 (ChatGPT 플랫폼)
+    participant GPT as OpenAI Custom GPT
+    participant Render as Render 백엔드 REST API
+    participant Store as Firestore / Data Layer
+
+    User->>GPT: 1. "8월 13일 전력 사용량 얼마였어?"
+    Note over GPT: 프롬프트 및 OpenAPI 스키마 분석<br/>(특정 날짜 엔드포인트 호출 결정)
+    GPT->>Render: 2. HTTP GET /api/data/2026-08-13 (Action 실행)
+    Render->>Store: 3. get_by_id("2026-08-13")
+    Store-->>Render: 4. DailyEnergyRecord (1.745 kWh, memo: null)
+    Render-->>GPT: 5. HTTP 200 OK {"id": "2026-08-13", "value": 1.745, ...}
+    Note over GPT: 반환된 실제 측정 데이터를 기반으로 답변 생성
+    GPT-->>User: 6. "2026년 8월 13일 전력 소비량은 1.745 kWh였습니다."
+```
 
 <br>
 </details>
