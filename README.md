@@ -395,7 +395,7 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
 빌드 도구나 프레임워크 없이 표준 HTML5, CSS3, Vanilla JavaScript (ES6)로 구축되었다:
 - **구성 요소**:
   - [`frontend/index.html`](frontend/index.html): 단일 페이지 레이아웃 (대화 내역 사이드바, AI 채팅창, 핵심 통계 카드, 일별 전력 CRUD 테이블, Chart.js 시각화).
-  - [`frontend/style.css`](style.css): 반응형 디자인, CSS 변수 기반 다크 모드/라이트 모드 테마, 부드러운 애니메이션.
+  - [`frontend/style.css`](style.css): 반응형 디자인, CSS 변수 기반 다크 모드/라이트 모드 테마.
   - [`frontend/config.js`](config.js): 클라이언트 런타임 환경 설정 (`window.API_BASE_URL`).
   - [`frontend/api.js`](frontend/api.js): `fetch` API 기반의 통합 REST API 클라이언트 모듈.
   - [`frontend/app.js`](frontend/app.js): DOM 조작, 실시간 차트 렌더링, 채팅 전송, CRUD 모달 제어.
@@ -417,7 +417,7 @@ Google Cloud Firestore에는 2개의 핵심 컬렉션이 유지된다:
    - 설명: 지정된 기간(시작일~종료일)의 일별 레코드 목록과 함께 사전 집계된 `total_consumption_kwh`, `average_daily_consumption_kwh`를 반환.
    - 매개변수: `start_date`, `end_date` (`YYYY-MM-DD`, 필수)
 3. `get_energy_statistics`:
-   - 설명: 커스텀 기간에 대한 결정론적 통계(`total_consumption_kwh`, `average_daily_consumption_kwh`, `minimum`, `maximum`, `records_count`)를 계산하여 반환. LLM이 수동으로 십진수 덧셈을 수행하다 계산 실수를 하지 않도록 파이썬 레벨에서 정밀하게 합산.
+   - 설명: 커스텀 기간에 대한 통계(`total_consumption_kwh`, `average_daily_consumption_kwh`, `minimum`, `maximum`, `records_count`)를 계산하여 반환. LLM이 수동으로 십진수 덧셈을 수행하다 계산 실수를 하지 않도록 파이썬 레벨에서 정밀하게 합산.
    - 매개변수: `start_date`, `end_date` (`YYYY-MM-DD`, 필수)
 
 #### 3) 웹 앱 내부 Function Calling 실행 흐름 (Internal Tool Execution)
@@ -498,10 +498,10 @@ sequenceDiagram
 | **ASGI Web Server** | **Uvicorn** (`0.28+`) | 경량·초고속 비동기 ASGI 서버, 프로덕션 환경 구동 및 로컬 개발용 핫 리로드 지원 |
 | **Validation / Settings** | **Pydantic v2 & Pydantic-Settings** | 강력한 타입 힌팅 기반 데이터 유효성 검증, 데이터 직렬화 및 환경 변수(`.env`) 안전 관리 |
 | **AI / LLM Integration** | **OpenAI API** (`gpt-4o-mini`, `openai 1.14+`) | Dynamic Context Injection 및 Function Calling 기반 전력 데이터 분석 AI 어시스턴트 |
-| **Database** | **Google Cloud Firestore** (`firebase-admin 6.5+`) | 서버리스 NoSQL NoSQL 클라우드 데이터베이스 (일별 전력 레코드 및 대화 히스토리 영구 저장) |
+| **Database** | **Google Cloud Firestore** (`firebase-admin 6.5+`) | 서버리스 NoSQL 클라우드 데이터베이스 (일별 전력 레코드 및 대화 히스토리 영구 저장) |
 | **Data Analysis** | **Pandas** (`2.2+`) | 30분 단위 시계열 데이터 전처리, 일별 집계 및 다차원 통계 엔진 구현 |
 | **Frontend** | **Vanilla HTML5, CSS3, ES6 JavaScript** | 프레임워크 없는 경량 단일 페이지(SPA) 대시보드, 다크/라이트 테마, Fetch API 통신 |
-| **Data Visualization** | **Chart.js** (CDN) | 반응형 시계열 꺾은선 차트 시각화 (일별 전력 소비량 추세 분석) |
+| **Data Visualization** | **Chart.js** (CDN) | 반응형 시계열 차트 시각화 (일별 전력 소비량 추세) |
 | **Cloud Hosting** | **Render (Backend)** / **Vercel (Frontend)** | 백엔드 Web Service 컨테이너 호스팅 및 프론트엔드 글로벌 정적 엣지 배포 |
 
 ---
@@ -591,14 +591,14 @@ uvicorn app.main:app --reload --port 8000     # 백엔드 서버 구동
 
 | 환경 변수명 | 설명 | 기본값 / 예시 | 프로덕션 필수 여부 |
 | :--- | :--- | :--- | :--- |
-| `PORT` | 웹 서버 포트 | `8000` (Local) / `10000` (Render) | 예 (호스팅 환경 자동 지정) |
+| `PORT` | 웹 서버 포트 | `8000` (Local) / `10000` (Render) | Y (호스팅 환경 자동 지정) |
 | `ENVIRONMENT` | 실행 환경 구분 | `development` / `production` | 권장 |
-| `ALLOWED_ORIGINS` | CORS 허용 도메인 (쉼표 구분) | `https://<your-app>.vercel.app` | **예 (백엔드)** |
-| `OPENAI_API_KEY` | OpenAI API 시크릿 키 | `sk-proj-...` | **예 (백엔드)** |
+| `ALLOWED_ORIGINS` | CORS 허용 도메인 (쉼표 구분) | `https://<your-app>.vercel.app` | Y (백엔드) |
+| `OPENAI_API_KEY` | OpenAI API 시크릿 키 | `sk-proj-...` | Y (백엔드) |
 | `OPENAI_MODEL` | 적용할 GPT 모델명 | `gpt-4o-mini` | 선택 |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase 서비스 계정 키 JSON 문자열 | `{"type":"service_account",...}` | **예 (Render 배포 시)** |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase 서비스 계정 키 JSON 문자열 | `{"type":"service_account",...}` | Y (Render 배포 시) |
 | `FIREBASE_CREDENTIALS_PATH` | 로컬 서비스 계정 파일 경로 | `serviceAccountKey.json` | 선택 (로컬용) |
-| `API_BASE_URL` | 프론트엔드가 호출할 백엔드 주소 | `https://<app>.onrender.com` | **예 (프론트엔드)** |
+| `API_BASE_URL` | 프론트엔드가 호출할 백엔드 주소 | `https://<app>.onrender.com` | Y (프론트엔드) |
 
 > 보안 및 안전성 고려사항
 > - 보안 비밀 정보(`.env`, `serviceAccountKey.json`, `*-firebase-adminsdk-*.json`)는 깃 저장소에 커밋하지 않고 `.gitignore`에 등록.
@@ -634,11 +634,17 @@ uvicorn app.main:app --reload --port 8000     # 백엔드 서버 구동
 
 <img src="./images/data_mgmt_CRUD.png">
 
-----
+---
 
 ### 대화 기록 화면
 
 <img src="./images/conversation_history.png">
+
+---
+
+### Swagger UI 화면
+
+<img src="./images/swagger_UI.png">
 
 ---
 
