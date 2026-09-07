@@ -144,50 +144,50 @@ electricity-consumption-AI-assistant/
 flowchart TD
     %% ================= FRONTEND LAYER =================
     subgraph Client["Frontend Layer (Vercel / SPA)"]
-        UI["Web UI Dashboard\n(HTML5 / CSS3 / JS / Chart.js)"]
-        API_JS["API Client Module\n(frontend/api.js)"]
-        CONFIG_JS["Runtime Config\n(frontend/config.js)"]
+        UI["Web UI Dashboard<br/>HTML5 / CSS3 / JS / Chart.js"]
+        API_JS["API Client Module<br/>frontend/api.js"]
+        CONFIG_JS["Runtime Config<br/>frontend/config.js"]
         
-        UI -->|Invokes API Functions| API_JS
+        UI -->|Calls API Functions| API_JS
         CONFIG_JS -->|Provides BASE_URL| API_JS
     end
 
     %% ================= BACKEND LAYER =================
     subgraph Backend["Backend Layer (FastAPI / Render)"]
-        FastAPI_App["FastAPI Core App & CORS Middleware\n(app/main.py)"]
+        FastAPI_App["FastAPI Core App and CORS<br/>app/main.py"]
         
         subgraph Routers["API Routing Layer"]
-            Router_Data["Data Router\n(/api/data)"]
-            Router_Chat["Chat Router\n(/api/chat)"]
-            Router_Conv["Conversations Router\n(/api/conversations)"]
+            Router_Data["Data Router<br/>/api/data"]
+            Router_Chat["Chat Router<br/>/api/chat"]
+            Router_Conv["Conversations Router<br/>/api/conversations"]
         end
 
-        subgraph Services["Service & Business Logic Layer"]
-            Service_Data["EnergyDataService & Repository\n(app/services/data_service.py)"]
-            Service_Summary["Summary Engine\n(app/analysis/summary.py)"]
-            Service_AI["AIChatService\n(app/services/ai_service.py)"]
-            Service_Conv["ConversationService\n(app/services/conversation_service.py)"]
+        subgraph Services["Service and Business Logic Layer"]
+            Service_Data["EnergyDataService and Repository<br/>app/services/data_service.py"]
+            Service_Summary["Summary Engine<br/>app/analysis/summary.py"]
+            Service_AI["AIChatService<br/>app/services/ai_service.py"]
+            Service_Conv["ConversationService<br/>app/services/conversation_service.py"]
         end
 
         subgraph Pipeline["Data Preprocessing Pipeline"]
-            Preprocessor["Preprocessor\n(app/analysis/preprocessor.py)"]
-            Raw_CSV[("Raw CSV (30-min intervals)\ndata/raw/energy_raw.csv")]
-            Daily_CSV[("Processed Daily CSV\ndata/processed/daily_energy.csv")]
+            Preprocessor["Preprocessor<br/>app/analysis/preprocessor.py"]
+            Raw_CSV[("Raw CSV 30-min Intervals<br/>data/raw/energy_raw.csv")]
+            Daily_CSV[("Processed Daily CSV<br/>data/processed/daily_energy.csv")]
             
-            Raw_CSV -->|Aggregation & Validation| Preprocessor
+            Raw_CSV -->|Aggregation and Validation| Preprocessor
             Preprocessor -->|Generates Baseline| Daily_CSV
         end
     end
 
     %% ================= STORAGE & EXTERNAL CLOUD =================
-    subgraph Storage_Cloud["Storage & Cloud Services"]
-        Firestore_Data[("Firestore: 'data' Collection\n(Dynamic CRUD records)")]
-        Firestore_Conv[("Firestore: 'conversations' Collection\n(Chat histories & sessions)")]
-        OpenAI_API["OpenAI API (gpt-4o-mini)\nFunction Calling / Tools"]
+    subgraph Storage_Cloud["Storage and Cloud Services"]
+        Firestore_Data[("Firestore data Collection<br/>Dynamic CRUD records")]
+        Firestore_Conv[("Firestore conversations Collection<br/>Chat histories and sessions")]
+        OpenAI_API["OpenAI API gpt-4o-mini<br/>Function Calling and Tools"]
     end
 
     %% ================= FLOW CONNECTIONS =================
-    API_JS -->|HTTP REST / JSON| FastAPI_App
+    API_JS -->|HTTP REST JSON| FastAPI_App
 
     FastAPI_App --> Router_Data
     FastAPI_App --> Router_Chat
@@ -195,24 +195,24 @@ flowchart TD
 
     %% Data Flow
     Router_Data --> Service_Data
-    Daily_CSV -.->|Load 184-Day Baseline| Service_Data
-    Service_Data <-->|Hybrid Merge & CRUD| Firestore_Data
-    Service_Data -->|Computes KPIs & Trends| Service_Summary
+    Daily_CSV -.->|Loads 184-Day Baseline CSV| Service_Data
+    Service_Data <-->|Hybrid Merge and CRUD| Firestore_Data
+    Service_Data -->|Computes KPIs and Trends| Service_Summary
 
     %% Chat & AI Flow
     Router_Chat --> Service_AI
     Service_AI -->|1. Injects Summary Context| Service_Summary
     Service_AI -->|2. Context + Prompt + Tools| OpenAI_API
-    OpenAI_API -->|3. Requests Tool Execution (if needed)| Service_AI
+    OpenAI_API -->|3. Requests Tool Execution if needed| Service_AI
     Service_AI -->|4. Runs Data Query via Service| Service_Data
-    Service_Data -->|5. Returns Exact Record/Period| Service_AI
+    Service_Data -->|5. Returns Exact Record or Period| Service_AI
     Service_AI -->|6. Sends Tool Result back for Answer| OpenAI_API
     OpenAI_API -->|7. Returns Final Natural Language Response| Service_AI
     Service_AI -->|8. Auto-Persists Chat Thread| Service_Conv
 
     %% Conversations Flow
     Router_Conv --> Service_Conv
-    Service_Conv <-->|Read / Write Message History| Firestore_Conv
+    Service_Conv <-->|Read and Write Message History| Firestore_Conv
 ```
 
 <br>
