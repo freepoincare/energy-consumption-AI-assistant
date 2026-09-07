@@ -449,7 +449,7 @@ sequenceDiagram
 #### 4) 🔌 외부 멀티채널 연동 (GPT Actions 연동 가이드)
 본 프로젝트의 백엔드 API는 FastAPI를 기반으로 **OpenAPI 3.1 표준 규격**을 자동 생성한다. 이를 통해 웹 대시보드뿐만 아니라 OpenAI ChatGPT의 **Custom GPTs (GPT Actions)** 와 연동하여 외부 대화 채널에서도 전력 분석 도구를 직접 HTTP로 호출할 수 있다.
 
-* **OpenAPI Schema URL**: `https://energy-consumption-ai-assistant.onrender.com/openapi.json`
+* **OpenAPI Schema URL**: `https://energy-consumption-ai-assistant.onrender.com/openapi.json` (API 데이터 명세서 원본)
 * **연동 절차 (How to Connect)**:
   1. ChatGPT → `Explore GPTs` → `+ Create` 접속
   2. `Configure` 탭 하단의 **Actions → Create new action** 선택
@@ -512,7 +512,7 @@ sequenceDiagram
 * **Frontend (대시보드 웹 앱)**: [https://energy-consumption-ai-assistant.vercel.app](https://vercel.com) *(또는 로컬 `http://localhost:8000`)*
 * **Backend API (서비스 루트)**: [https://energy-consumption-ai-assistant.onrender.com](https://energy-consumption-ai-assistant.onrender.com)
 * **Swagger UI (대화형 API 문서)**: [https://energy-consumption-ai-assistant.onrender.com/docs](https://energy-consumption-ai-assistant.onrender.com/docs)
-* **ReDoc (API 명세)**: [https://energy-consumption-ai-assistant.onrender.com/redoc](https://energy-consumption-ai-assistant.onrender.com/redoc)
+* **ReDoc (읽기 전용 API 문서)**: [https://energy-consumption-ai-assistant.onrender.com/redoc](https://energy-consumption-ai-assistant.onrender.com/redoc)
 * **Health Check**: [https://energy-consumption-ai-assistant.onrender.com/health](https://energy-consumption-ai-assistant.onrender.com/health)
 
 > 💡 **Render 무료 티어 슬립(Cold Start) 안내**:
