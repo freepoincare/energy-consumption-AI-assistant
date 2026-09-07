@@ -371,7 +371,7 @@ class AIChatService:
         """
         # 1. Generate current energy summary from database
         summary_response = EnergyDataService.get_summary()
-        summary_data = summary_response.model_dump()
+        summary_data = summary_response.model_dump()   # convert a Pydantic data model object into Python dict
 
         # 2. Build system prompt with injected context
         system_prompt = build_system_prompt(summary_data)
