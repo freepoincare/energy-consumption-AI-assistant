@@ -1,0 +1,81 @@
+[Request]
+
+Before deployment, please perform a final Git/GitHub readiness check for STEP 10.
+
+1. Check `git status`.
+2. Verify that no `.env` files, Firebase service-account JSON files, API keys, credentials, or other secrets are tracked or staged.
+3. Verify `.gitignore` correctly excludes all sensitive credential files.
+4. Show me the files that will be included in the STEP 10 commit.
+5. Do NOT commit, push, or modify application code yet.
+6. Report any problems you find and stop.
+
+---
+
+[Answer]
+
+   Final Git/GitHub Readiness Check (STEP 10)
+
+  In accordance with prompt-10a.txt, here is the readiness audit before staging, committing, or deploying:
+  ──────
+  ### 1. git status Summary
+    On branch main
+    Your branch is up to date with 'origin/main'.
+
+    Changes not staged for commit:
+        modified:   .gitignore
+        modified:   README.md
+        modified:   app/services/ai_service.py
+        modified:   archive/prompts/prompt-02.txt
+        deleted:    archive/study/01_prompts.md
+        modified:   archive/study/04_FastAPI.md
+        deleted:    archive/study/05_FastAPI-init_CORS.md
+        deleted:    archive/study/06_Uvicorn_ASGI.md
+        modified:   frontend/index.html
+
+    Untracked files:
+        frontend/config.js
+        render.yaml
+        vercel.json
+
+    no changes added to commit (use "git add" and/or "git commit -a")
+  ──────
+  ### 2. Secret & Credential Leak Check
+
+  • .env and .env.local: NOT tracked and NOT staged. Listed under .gitignore.
+  • Firebase Service Account Keys (serviceAccountKey.json, *-firebase-adminsdk-*.json): NOT tracked and NOT staged. Ignored by .gitignore rules (*.json, config/, *-
+  firebase-adminsdk-*.json).
+  • OpenAI API Key: Checked render.yaml, vercel.json, frontend/config.js, frontend/api.js, and README.md. Zero secret keys are hardcoded in source files. (Only
+  placeholders like sk-proj-... and environment variable references OPENAI_API_KEY are used).
+  • Client-side exposure: frontend/config.js only specifies window.API_BASE_URL with no secrets.
+  ──────
+  ### 3. .gitignore Verification
+
+  The .gitignore file correctly protects credentials:
+
+  • Blocks .env, .env.local, .env.*.local
+  • Blocks *.json with exceptions strictly for package.json, !data/**/*.json, and !vercel.json
+  • Blocks config/*-firebase-adminsdk-*.json and *-firebase-adminsdk-*.json
+  • Blocks virtual environments (.venv/, venv/) and cache directories (__pycache__/, .pytest_cache/)
+  ──────
+  ### 4. Files Intended for the STEP 10 Commit
+
+  The core files belonging to STEP 10 (Production Deployment Preparation & Documentation) are:
+
+  1. **render.yaml** (Untracked): Render Infrastructure-as-Code Blueprint defining the build and production start command (uvicorn app.main:app --host 0.0.0.0 --port
+  $PORT).
+  2. **vercel.json** (Untracked): Vercel routing and clean URL configuration for static frontend hosting.
+  3. **config.js** (Untracked): Runtime API base URL resolver (window.API_BASE_URL).
+  4. **index.html** (Modified): Included script tag for config.js before api.js.
+  5. **.gitignore** (Modified): Added whitelist exception for !vercel.json.
+  6. **ai_service.py** (Modified): Upstream provider error fallback to deterministic anti-hallucination logic and conversation recording.
+  7. **README.md** (Modified): Complete 25-section project documentation with architecture diagram and conceptual data flow.
+
+  (Note: There are also modified/deleted study notes in archive/study/ and archive/prompts/prompt-02.txt from earlier steps. You can choose whether to include or discard
+  these when you perform your commit).
+  ──────
+  ### 5. Identified Problems & Status
+
+  • Zero credential leaks detected: Clean and safe.
+  • Zero tracked secrets: Clean and safe.
+  • Application Code & Git State: Maintained as read-only; no commit or push was executed.
+

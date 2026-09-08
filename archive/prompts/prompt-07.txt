@@ -1,0 +1,145 @@
+[Request]
+
+Continue the project from STEP 6.
+
+IMPORTANT:
+Only implement STEP 7.
+Do not build the frontend, deployment, or Function Calling yet.
+
+Implement conversation history using Firestore.
+
+Collection:
+
+conversations
+
+Implement:
+
+POST   /api/conversations
+GET    /api/conversations
+GET    /api/conversations/{id}
+DELETE /api/conversations/{id}
+
+A conversation should contain at least:
+
+- conversation id
+- title/name
+- created_at
+- updated_at
+- messages
+
+Each message should contain:
+
+- role
+- content
+- timestamp if useful
+
+At minimum support:
+
+- user
+- assistant
+
+Modify /api/chat so completed chat exchanges can be automatically persisted according to the mission requirements.
+
+Keep conversation logic in a dedicated conversation service/repository.
+
+Do not mix conversation persistence logic into the data-analysis service.
+
+Ensure:
+
+1. Pydantic validation.
+2. Missing conversation ID handling.
+3. Complete message history retrieval.
+4. Existing energy CRUD continues working.
+5. Existing summary continues working.
+6. Existing context injection continues working.
+7. Credentials remain protected.
+
+Do not implement:
+
+- frontend
+- Function Calling
+- MCP
+- deployment
+
+After implementation:
+
+1. Show Firestore conversation document structure.
+2. Explain how a chat becomes a saved conversation.
+3. Explain how an old conversation will later be loaded by the frontend.
+4. Explain changes to /api/chat.
+5. Test save/list/load/delete.
+6. Stop and wait.
+
+---
+
+[Answer]
+
+  STEP 7 Implementation Report
+  We have implemented STEP 7: Conversation History Persistence in Firestore, Dedicated Conversation Service & Endpoints, and Automatic Chat Persistence.
+  ──────
+  ### 1. Firestore Conversation Document Structure
+
+  • Collection: conversations
+  • Document Schema:
+    {
+      "id": "conv-uuid-9876-5432",
+      "title": "Chat: When was my highest electri...",
+      "created_at": "2026-09-03T04:43:00.123456+00:00",
+      "updated_at": "2026-09-03T04:43:10.654321+00:00",
+      "messages": [
+        {
+          "role": "user",
+          "content": "When was my highest electricity consumption day?",
+          "timestamp": "2026-09-03T04:43:00.123456+00:00"
+        },
+        {
+          "role": "assistant",
+          "content": "Your highest consumption day was 2026-03-16 (Monday) with 12.21 kWh.",
+          "timestamp": "2026-09-03T04:43:10.654321+00:00"
+        }
+      ]
+    }
+
+  ──────
+  ### 2. How a Chat Becomes a Saved Conversation
+
+  1. A client sends a query to POST /api/chat with or without a conversation_id.
+  2. If conversation_id is omitted, AIChatService automatically generates a new unique UUID.
+  3. The AI assistant processes the prompt using the injected energy summary context.
+  4. Upon generating the assistant reply, AIChatService invokes ConversationService.record_chat_exchange(conv_id, user_message, assistant_reply):
+      • If the conversation does not exist, a new document is created with a meaningful title generated from the user's initial question.
+      • If it already exists, the new user and assistant message pair are appended to the messages array, and updated_at is refreshed.
+  5. The conversation_id is returned in the ChatResponse payload.
+  ──────
+  ### 3. How Old Conversations Will Later Be Loaded by the Frontend
+
+  1. Listing Sessions: The frontend calls GET /api/conversations to populate the sidebar with past chat sessions (sorted by updated_at descending).
+  2. Selecting a Session: When the user clicks a past session, the frontend requests GET /api/conversations/{conv_id}.
+  3. Re-rendering Chat UI: The frontend receives the full messages array and renders the historical message bubbles (user and assistant).
+  4. Continuing the Conversation: Subsequent messages sent by the user include the existing conversation_id, seamlessly appending new exchanges to the same thread.
+  ──────
+  ### 4. Changes to /api/chat
+
+  • Added automated conversation recording hook inside app/services/ai_service.py.
+  • Preserved complete separation of concerns: AIChatService handles context injection and inference, delegating all database persistence to ConversationService
+  (app/services/conversation_service.py).
+  • No energy analysis or database models were polluted.
+  ──────
+  ### 5. Conversation Endpoints Summary
+
+   HTTP Method                     | Route                           | Status Code                     | Purpose
+  ---------------------------------|---------------------------------|---------------------------------|-----------------------------------------------------------------
+   GET                             | /api/conversations              | 200 OK                          | Retrieves all conversation threads ordered by latest activity
+   POST                            | /api/conversations              | 201 Created                     | Creates a new conversation thread
+   GET                             | /api/conversations/{id}         | 200 OK / 404 Not Found          | Retrieves a specific conversation with complete message history
+   DELETE                          | /api/conversations/{id}         | 200 OK / 404 Not Found          | Deletes a conversation session
+  ──────
+  ### 6. Automated Unit Tests
+
+  All 19 test cases across all modules pass with 100% success:
+
+  • test_conversations.py (Created): Verifies creation, retrieval, listing, deletion, and auto-persistence via POST /api/chat.
+  • test_analysis.py: Verifies data aggregation & summary.
+  • test_service.py: Verifies energy CRUD operations.
+  • test_firestore_mock.py: Verifies Firestore mock bindings.
+  • test_chat.py: Verifies chat context injection and anti-hallucination.

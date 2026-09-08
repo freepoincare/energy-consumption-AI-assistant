@@ -1,0 +1,222 @@
+[Request]
+
+You are helping me build an AI Native project step by step.
+
+First, read the entire archive/mission_statement.txt in this repository and treat it as the authoritative specification. (Do not read any files in archive)
+
+The project is an AI assistant based on personal electricity-consumption data.
+
+DATA CONTEXT:
+
+- Raw data is measured every 30 minutes and it's available in data/raw/ folder.
+- Data period: 2026-03-01 through 2026-08-31.
+- Main raw columns:
+  - consumption_kwh
+  - estimated_cost_pence
+  - standing_charge_pence
+  - start
+  - end
+
+IMPORTANT DATA SEMANTICS:
+
+- Consumption (kwh) is already the energy consumed during the 30-minute interval.
+- Daily electricity consumption must therefore be calculated by SUMMING all interval Consumption (kwh) values belonging to the same local calendar date.
+- Do NOT multiply the interval consumption by 0.5 again.
+- Preserve timezone-aware timestamps when determining the local calendar date.
+- The application's primary time-series unit is daily electricity consumption in kWh/day.
+- Preserve the raw 30-minute data whenever possible.
+- Estimated cost must not be described as confirmed actual billing.
+
+The final architecture should conceptually support:
+
+Raw 30-minute data
+→ validation
+→ daily preprocessing
+→ daily energy data
+→ Firestore
+→ analysis/summary service
+→ summary JSON
+→ OpenAI context injection
+→ GPT
+→ if summary is insufficient, later Function Calling
+→ Firestore query
+→ tool result
+→ GPT
+→ final answer
+
+For STEP 1 ONLY:
+
+1. Read mission_statement.txt completely.
+2. Inspect the current project directory.
+3. Summarize the mission requirements.
+4. Separate required features from optional bonus features.
+5. Design a clean project structure for:
+   - backend
+   - frontend
+   - data
+   - tests
+   - configuration
+6. Create the basic FastAPI application.
+7. Create requirements.txt with appropriate packages for the current project stage.
+8. Create .gitignore.
+9. Create .env.example with future environment variables, without real secrets.
+10. Configure basic CORS structure.
+11. Create placeholder folders/files for:
+    - routers
+    - services
+    - models
+    - database
+    - analysis
+    - tests
+12. Create GET /health.
+13. Make sure the FastAPI app can run locally.
+14. Document the planned end-to-end architecture without implementing future functionality.
+
+The architecture must preserve a clear separation between:
+
+- raw data
+- preprocessing
+- daily data
+- analysis/summary
+- database
+- API
+- AI/chat
+- frontend
+
+DO NOT implement yet:
+- Firestore CRUD
+- OpenAI
+- chat
+- conversation history
+- actual energy-data analysis
+- Function Calling
+- MCP
+- frontend
+- deployment
+
+After completing STEP 1:
+
+1. Explain the purpose of each important file.
+2. Explain the planned data flow.
+3. Explain how to run FastAPI locally.
+4. Stop and wait.
+
+---
+
+[Answer]
+
+  I have completed STEP 1 in accordance with the specifications in prompt-01.txt and mission_statement.txt.
+  ──────
+  ### 1. Requirements Summary & Scope Separation
+
+  #### Core Required Features (Mandatory)
+
+  1. Data Preprocessing & Summary:
+      • Aggregate raw 30-minute interval electricity data into daily totals (kWh/day) per local calendar date.
+      • Calculate statistical summary (period, count, min/max/average consumption, trends).
+  2. FastAPI Backend Structure:
+      • Structured layered architecture (routers, services, models, database, analysis, core).
+      • CORS middleware configuration & environment variable handling via pydantic-settings.
+      • Health check endpoint GET /health and Swagger UI at /docs.
+  3. Database (Firestore):
+      • CRUD endpoints for data collection: POST, GET, PUT, DELETE at /api/data.
+      • Summary endpoint: GET /api/data/summary.
+      • Conversation management: POST, GET, DELETE at /api/conversations.
+  4. AI Assistant & Context Injection:
+      • POST /api/chat injecting summary metrics into the OpenAI GPT system prompt.
+      • Storing chat logs into Firestore conversations.
+  5. Vanilla Frontend & Deployment:
+      • Pure HTML/CSS/JavaScript UI (no frontend framework).
+      • Render backend deployment + Vercel frontend deployment.
+
+  #### Optional Bonus Features
+  1. Tool Calling / Function Calling / MCP:
+      • Enabling GPT to dynamically invoke tools/queries for deep date-range lookups when the initial summary is insufficient.
+  2. Advanced Analytics & UX:
+      • Visual trend charts (e.g., Chart.js), CSV data export, and dark mode toggle.
+  ──────
+  ### 2. Planned End-to-End Data Flow
+
+    [Raw 30-min Data: data/raw/energy_raw.csv]
+              │
+              ▼
+    [Validation & Aggregation: app/analysis/preprocessor.py]
+      - Preserve timezone-aware timestamps
+      - Sum 30-min interval kWh per local calendar day (without multiplying by 0.5)
+              │
+              ▼
+    [Daily Energy Dataset: data/processed/]
+              │
+              ▼
+    [Firestore Database: app/database/firestore.py]
+      - Stored in 'data' collection
+              │
+              ▼
+    [Summary Service: app/analysis/summary.py]
+      - Calculates metrics (period, count, total, avg, max, min, trend)
+              │
+              ▼
+    [Context Injection Engine: app/services/ai_service.py]
+      - Injects summary JSON into System Prompt
+              │
+              ▼
+    [OpenAI GPT API]  ◄── (Optional Tool / Function Calling for specific date queries)
+              │
+              ▼
+    [FastAPI Endpoints: app/routers/chat.py]
+              │
+              ▼
+    [Vanilla Frontend: frontend/]
+  ──────
+  ### 3. Purpose of Important Files & Project Structure
+
+  The project has been laid out with clean separation of concerns:
+
+  • main.py: FastAPI application entrypoint, CORS configuration, root and /health endpoints.
+  • config.py: Application configuration and environment variable loading (Settings using pydantic-settings).
+  • routers/: API route controllers:
+      • data.py: Endpoints for energy data CRUD and summary.
+      • chat.py: Endpoint for AI assistant chat interactions.
+      • conversations.py: Endpoints for conversation history.
+  • services:
+      • ai_service.py: OpenAI GPT API client & prompt assembly logic.
+      • data_service.py: Business logic layer mediating between routers and database/analysis modules.
+  • models/: Pydantic request/response validation schemas (data_models.py, chat_models.py).
+  • firestore.py: Firebase Admin SDK initialization and Firestore operations.
+  • analysis/:
+      • preprocessor.py: Ingests and aggregates raw 30-min data to daily series.
+      • summary.py: Statistical computation and trend analysis.
+  • requirements.txt: Pinned dependencies for FastAPI, Uvicorn, Firebase Admin, OpenAI, Pandas, and testing.
+  • .env.example: Environment variable template.
+  • .gitignore: Standard Python, environment, and secret exclusions.
+  • test_health.py: Health check automated test suite.
+  • README.md: Step 1 documentation.
+  ──────
+  ### 4. How to Run FastAPI Locally
+
+  1. Activate Virtual Environment & Install Requirements:
+
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate       # macOS/Linux
+    source .venv/Scripts/activate   # windows Git Bash
+    pip install -r requirements.txt
+    ```
+
+  2. Set up Environment Configuration:
+    
+    ```bash
+    cp .env.example .env          # bash
+    Copy-Item .env.example .env   # windows
+    ```
+
+  3. Start the Development Server:
+    
+    ```bash
+    uvicorn app.main:app --reload --port 8000
+    ```
+
+  4. Access the Service:
+      • Health Check: http://localhost:8000/health
+      • Swagger Documentation: http://localhost:8000/docs
+

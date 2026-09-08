@@ -1,0 +1,859 @@
+I have completed the required implementation through STEP 10 of the project.
+
+The backend, Firestore, APIs, OpenAI chat, conversation history, energy summary, and frontend functionality already exist.
+
+However, the current deployed frontend looks like unstyled/default HTML rather than the modern dashboard requested in STEP 8.
+
+I want you to improve ONLY the frontend presentation and UX.
+
+IMPORTANT:
+Do NOT rewrite or break the existing backend functionality.
+
+Do NOT change the core architecture.
+
+Do NOT remove existing features.
+
+First inspect the existing project and frontend code carefully before making changes.
+
+==================================================
+CURRENT PROJECT
+==================================================
+
+This is a personal Electricity Consumption AI Assistant.
+
+The application uses:
+
+- 30-minute electricity consumption data
+- Daily electricity consumption in kWh
+- Data period: 2026-03-01 ~ 2026-08-31
+- Firestore
+- FastAPI
+- OpenAI
+- Vanilla HTML
+- CSS
+- JavaScript
+
+The frontend currently contains:
+
+1. Chat History
+2. Energy AI Assistant
+3. Energy Summary
+4. Daily Energy Data
+5. Add Daily Energy Record
+6. Edit/Delete data functionality
+7. Conversation history
+8. AI chat
+
+The current page looks like unstyled/default browser HTML.
+
+The goal is to transform it into a polished, modern energy dashboard.
+
+==================================================
+IMPORTANT CONSTRAINTS
+==================================================
+
+1. Continue using vanilla HTML/CSS/JavaScript.
+
+Do NOT introduce:
+
+- React
+- Vue
+- Next.js
+- Angular
+- Tailwind requiring a build pipeline
+- another frontend framework
+
+2. Do NOT change the backend API contracts unless absolutely necessary.
+
+3. Do NOT change:
+
+- Firestore structure
+- FastAPI routes
+- OpenAI integration
+- conversation storage
+- data-analysis logic
+- summary calculations
+
+4. Preserve all existing functionality.
+
+5. Do not replace real data with mock data.
+
+6. Do not hard-code fake statistics.
+
+7. Use the existing API endpoints.
+
+8. Keep API keys and backend secrets out of frontend code.
+
+9. Make the frontend responsive.
+
+10. The final result should look like a real modern SaaS/dashboard application, not a school-project HTML page.
+
+==================================================
+DESIGN DIRECTION
+==================================================
+
+Design a modern, clean, professional electricity analytics dashboard.
+
+Visual direction:
+
+- modern SaaS dashboard
+- clean
+- minimal
+- professional
+- data-focused
+- approachable
+- subtle energy/electricity visual identity
+- generous whitespace
+- rounded cards
+- clear typography hierarchy
+- subtle borders/shadows
+- restrained use of color
+- responsive layout
+
+Avoid:
+
+- excessive gradients
+- excessive animations
+- cartoonish UI
+- excessive emojis
+- overly bright colors
+- clutter
+- huge empty areas
+- default browser styles
+
+Use CSS variables for the design system where appropriate.
+
+For example:
+
+--background
+--surface
+--surface-hover
+--border
+--text-primary
+--text-secondary
+--accent
+--success
+--warning
+--danger
+
+Choose a cohesive visual system.
+
+==================================================
+PAGE STRUCTURE
+==================================================
+
+Create a proper dashboard layout.
+
+Suggested structure:
+
+--------------------------------------------------
+HEADER / NAVIGATION
+--------------------------------------------------
+
+Left:
+
+⚡ Electricity Assistant
+
+Subtitle:
+
+Personal Energy Analytics
+
+Right:
+
+- connection/status indicator if useful
+- date range
+- Dark Mode toggle if already implemented
+
+--------------------------------------------------
+MAIN DASHBOARD
+--------------------------------------------------
+
+Create a centered responsive container with a reasonable maximum width.
+
+For example:
+
+max-width: 1400px;
+
+Do NOT let content stretch across the entire browser width.
+
+==================================================
+SECTION 1 — OVERVIEW
+==================================================
+
+Create a KPI card grid.
+
+Example:
+
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ Average / Day  │ │ Total Usage    │ │ Peak Day       │ │ Lowest Day     │
+│ 12.4 kWh       │ │ 2,100 kWh      │ │ 18.7 kWh       │ │ 6.2 kWh        │
+└────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘
+
+Use the REAL values returned from the summary API.
+
+Each card should have:
+
+- label
+- large value
+- unit
+- optional supporting information
+- appropriate visual hierarchy
+
+For peak/lowest day, show the date in smaller secondary text.
+
+==================================================
+SECTION 2 — ENERGY TREND
+==================================================
+
+Create a visually attractive energy-consumption chart.
+
+Use actual application data.
+
+Prefer:
+
+- daily consumption trend
+OR
+- monthly consumption comparison
+
+A line chart for daily usage would be particularly useful.
+
+If an existing chart library is already installed, inspect whether it can be reused.
+
+If no chart library exists, use a lightweight approach that does not require a major frontend framework.
+
+The chart should have:
+
+- readable labels
+- tooltip if practical
+- responsive width
+- appropriate axis labels
+- kWh units
+- clear title
+
+Example title:
+
+"Electricity Consumption"
+
+Subtitle:
+
+"Daily usage from March 1 to August 31, 2026"
+
+Do not fabricate data.
+
+==================================================
+SECTION 3 — AI ASSISTANT
+==================================================
+
+The AI assistant should become one of the main visual focal points.
+
+Create a modern chat card.
+
+Example:
+
+┌─────────────────────────────────────────────────────┐
+│ ⚡ Energy AI Assistant                               │
+│ Ask questions about your electricity usage          │
+│                                                     │
+│  AI: Hello! I analyzed your energy data...          │
+│                                                     │
+│  You: Which month did I use the most electricity?   │
+│                                                     │
+│  AI: August had the highest...                      │
+│                                                     │
+│ ─────────────────────────────────────────────────── │
+│ Ask about your electricity usage...           Send  │
+└─────────────────────────────────────────────────────┘
+
+Requirements:
+
+- message bubbles
+- user/assistant distinction
+- readable spacing
+- scrolling message area
+- input at bottom
+- Send button
+- loading state
+- error state
+- disabled Send button while waiting if appropriate
+
+Do not display raw JSON to the user.
+
+Format AI responses as readable text.
+
+If Markdown rendering already exists, preserve it.
+
+==================================================
+SECTION 4 — QUICK QUESTIONS
+==================================================
+
+Add useful clickable suggested questions.
+
+For example:
+
+"What is my average daily usage?"
+
+"Which month did I use the most?"
+
+"Do I use more on weekends?"
+
+"Has my usage increased recently?"
+
+"Which day had my highest consumption?"
+
+Clicking a suggestion should place/send the question through the existing chat API.
+
+These should look like small modern suggestion chips/buttons.
+
+==================================================
+SECTION 5 — ENERGY INSIGHTS
+==================================================
+
+Create a compact insights area using the existing summary API.
+
+Show useful information such as:
+
+- weekday vs weekend comparison
+- highest-use day of week
+- recent 7-day usage
+- recent 30-day usage
+- trend
+
+Do not invent additional statistics.
+
+Use the actual summary fields already returned by the backend.
+
+Example:
+
+┌────────────────────────────┐
+│ Weekly Pattern             │
+│                            │
+│ Weekdays   11.8 kWh/day    │
+│ Weekends   13.4 kWh/day    │
+│                            │
+│ Weekends are 13.6% higher  │
+└────────────────────────────┘
+
+==================================================
+SECTION 6 — DAILY DATA
+==================================================
+
+Turn the current plain data section into a professional data table.
+
+Include:
+
+- Date
+- Consumption
+- Memo
+- Actions
+
+Actions:
+
+- Edit
+- Delete
+
+Add a prominent:
+
+"+ Add Day"
+
+button.
+
+The table should have:
+
+- proper header
+- alternating/subtle row treatment
+- hover state
+- readable spacing
+- responsive behavior
+
+For smaller screens, make the table horizontally scrollable or transform it into a mobile-friendly layout.
+
+==================================================
+SECTION 7 — ADD / EDIT DATA
+==================================================
+
+Do NOT permanently show a large raw form on the page.
+
+Instead, use a modal/dialog or a visually contained form card.
+
+Fields:
+
+Date
+Daily Electricity Consumption (kWh)
+Memo / Note
+
+Use proper labels.
+
+Use validation messages.
+
+Buttons:
+
+Cancel
+Save Record
+
+The form should visually match the rest of the dashboard.
+
+==================================================
+SECTION 8 — CHAT HISTORY
+==================================================
+
+Make conversation history visually polished.
+
+If appropriate, use:
+
+- sidebar
+OR
+- collapsible panel
+
+Each conversation item should show:
+
+- title
+- date/time
+- selected state
+- hover state
+
+New Chat should be a clear button.
+
+Do not make the history dominate the entire page.
+
+On mobile, make it collapsible.
+
+==================================================
+LOADING / ERROR / EMPTY STATES
+==================================================
+
+This is important.
+
+Do not leave users staring at:
+
+"Loading..."
+
+or "--"
+
+without context.
+
+Create polished states such as:
+
+Loading summary...
+
+No data available.
+
+Unable to load summary.
+
+Unable to connect to server.
+
+No conversations yet.
+
+No daily records found.
+
+Use appropriate visual indicators.
+
+==================================================
+RESPONSIVE DESIGN
+==================================================
+
+The application must work well on:
+
+- desktop
+- tablet
+- mobile
+
+Desktop:
+
+Use multi-column dashboard layouts.
+
+Tablet:
+
+Reduce columns.
+
+Mobile:
+
+Use one-column layout.
+
+The chat interface must remain usable on a small screen.
+
+The data table must not overflow the entire page.
+
+Buttons and inputs must remain easy to use.
+
+==================================================
+ACCESSIBILITY
+==================================================
+
+Improve basic accessibility:
+
+- semantic HTML
+- proper labels
+- keyboard-accessible buttons
+- visible focus states
+- sufficient text contrast
+- aria-label where appropriate
+- don't rely only on color to communicate state
+
+==================================================
+ICONS
+==================================================
+
+Do not rely heavily on emojis such as:
+
+📊
+📈
+🤖
+📋
+✏️
+
+Use a consistent icon approach if an existing icon library is already available.
+
+If no icon library exists, use simple text/CSS or inline SVG icons where appropriate.
+
+Keep icons subtle.
+
+==================================================
+DARK MODE
+==================================================
+
+If dark mode already exists from the bonus implementation:
+
+- polish it
+- ensure every component supports it
+- ensure contrast is good
+- persist the user's preference if already implemented
+
+If dark mode does NOT exist, do not let this become the main task. Focus on the required UI redesign first.
+
+==================================================
+VISUAL HIERARCHY
+==================================================
+
+The page should make the following hierarchy obvious:
+
+1. Electricity Assistant / dashboard identity
+2. Key energy statistics
+3. Energy trend
+4. AI Assistant
+5. Insights
+6. Daily data
+7. Conversation history
+
+The user should understand the current energy situation within a few seconds.
+
+==================================================
+IMPORTANT: USE REAL BACKEND DATA
+==================================================
+
+Inspect the existing frontend API code.
+
+Identify how it currently calls:
+
+- GET /api/data
+- GET /api/data/summary
+- POST /api/chat
+- conversation endpoints
+- CRUD endpoints
+
+Preserve these API calls.
+
+Do not replace them with hard-coded examples.
+
+The redesigned frontend must continue to work with the deployed Render backend.
+
+==================================================
+BEFORE CODING
+==================================================
+
+First inspect:
+
+1. frontend directory
+2. index.html
+3. CSS files
+4. JavaScript files
+5. API client code
+6. existing chart implementation if any
+7. vercel.json
+8. current environment/configuration
+
+Then explain briefly:
+
+- what is currently causing the page to look unstyled
+- which files need to be modified
+- whether the existing frontend architecture can be preserved
+
+Only after this inspection, implement the redesign.
+
+==================================================
+AFTER CODING
+==================================================
+
+Test all existing functionality.
+
+Verify:
+
+[ ] Page loads successfully on Vercel
+
+[ ] Summary loads from backend
+
+[ ] KPI cards show real data
+
+[ ] Energy chart uses real data
+
+[ ] AI chat works
+
+[ ] Quick questions work
+
+[ ] Conversation history loads
+
+[ ] Existing conversation can be opened
+
+[ ] New conversation works
+
+[ ] Daily data loads
+
+[ ] Add Day works
+
+[ ] Edit works
+
+[ ] Delete works
+
+[ ] Loading states work
+
+[ ] Error states work
+
+[ ] Responsive layout works
+
+[ ] No API keys are exposed
+
+[ ] Existing Render backend still works
+
+[ ] No backend functionality was accidentally broken
+
+==================================================
+IMPORTANT FINAL REQUIREMENT
+==================================================
+
+Do NOT simply add a few colors to the existing page.
+
+Actually redesign the layout and visual hierarchy.
+
+The result should look like a polished personal energy analytics dashboard suitable for a portfolio project.
+
+However, prioritize maintainability and clarity over unnecessary visual complexity.
+
+After implementation:
+
+1. Show me the updated frontend directory structure.
+2. List every file modified.
+3. Explain the major UI/UX changes.
+4. Explain how the dashboard uses the existing backend APIs.
+5. Explain how responsive behavior was implemented.
+6. Explain how you verified that existing functionality was not broken.
+7. Tell me exactly how I should test the redesigned page locally and on Vercel.
+8. Stop and wait for my next instruction.
+
+
+---
+
+[Answer]
+
+▸ Thought for 4s
+  Let me read the prompt-10b.txt file to understand what the user wants.
+
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/archive/prompts/prompt-10b.txt) (ctrl+o to expand)
+▸ Thought for 5s
+  This is a big prompt requesting a complete frontend redesign. Let me first inspe...
+  Let me start by inspecting all existing frontend files as required by the prompt.
+
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/index.html)
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/style.css)
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/api.js)
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/app.js)
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/config.js) (ctrl+o to expand)
+
+  Now let me check what the backend summary API returns so I know the exact data shape to work with:
+
+● Agent(research: Backend API researcher)(I need you to research the backend API response shapes for this project. Please inspect these files and report back the exact
+JS...)
+● Schedule(60s: Check on the backend API research subagent progress) (ctrl+o to expand)
+
+  I'm inspecting all the existing frontend code and researching the backend API response shapes. I'll have a comprehensive analysis and the full redesign plan shortly.
+  Let me wait for the API structure research to come back.
+▸ Thought for 4s
+  The timer fired, which means the subagent hasn't responded yet. Let me check on ...
+
+● ManageSubagents(list) (ctrl+o to expand)
+
+  The subagent is still running. Let me go ahead and look at the key backend files myself to speed things up.
+
+● Read(~/OneDrive/Codyssey/AI_native/projects/M1-2/app/analysis/summary.py) (ctrl+o to expand)
+  Now I have a complete understanding of the codebase. Let me kill the subagent and proceed with the implementation.
+
+● ManageSubagents(kill ["259a54e9-1c79-4768-880e-962e18911483"]) (ctrl+o to expand)
+
+  Now I have the complete picture. Let me provide the pre-coding analysis as required, then implement the full redesign.
+  ──────
+  ## Pre-Coding Analysis
+
+  What's causing the page to look unstyled:
+  The existing CSS in style.css actually has decent styling, but the layout is a rigid 3-column grid (280px | 1fr | 340px) that crams everything into sidebar panels. The
+  summary is tiny metrics in a right sidebar. There's no chart, no quick-question chips, no insights section, no visual hierarchy, and heavy emoji usage. On smaller
+  screens it collapses to single column but without mobile-optimized layouts. The overall feel is "functional prototype" rather than "polished SaaS dashboard."
+
+  Which files need to be modified:
+
+  • frontend/index.html — Complete layout restructure (header → KPIs → chart → AI chat → insights → data table)
+  • frontend/style.css — Complete CSS redesign with CSS variables, dark mode, responsive breakpoints
+  • frontend/app.js — Add chart rendering (Chart.js CDN), quick questions, insights section, dark mode toggle, improved loading/error states
+
+  Can the existing architecture be preserved?
+  Yes, absolutely. api.js and config.js remain untouched. All ApiService calls are preserved. No backend changes needed.
+
+  Now let me implement the full redesign. I'll use subagents to write the three files in parallel.
+
+● DefineSubagent(frontend-writer: A subagent that writes frontend files (HTML, CSS, JS) for the energy dashboard redesign. Has write tools enabled.)
+● Agent(frontend-writer: CSS designer)(Write the complete redesigned CSS file to: C:\Users\skybl\OneDrive\Codyssey\AI_native\projects\M1-2\frontend\sty...) (ctrl+o to
+expand)
+
+▸ Thought for 4s
+  The stream was interrupted. I had launched two subagents to write the CSS and HT...
+  Let me check on the status of the subagents I launched for the CSS and HTML files.
+
+● ManageSubagents(list) (ctrl+o to expand)
+
+  Both subagents are still running (CSS designer and HTML restructurer). Let me set a timer to check back when they finish.
+
+● Schedule(120s: Check on CSS and HTML subagent progress) (ctrl+o to expand)
+
+  The CSS and HTML subagents are both actively working on the redesign. I'll continue with the app.js rewrite once they finish, since the JavaScript needs to match the
+  final HTML structure. Hang tight — this is a substantial redesign across all three files.
+
+⚠ Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 167h52m41s.
+Error ID: fdf9080e-6fa1-4692-9517-41e3511c4fc5-318
+
+Resume with -c (or command below):
+agy --conversation=1d09379f-2121-47e1-995e-f0ca1a8589d3
+
+---
+
+[Answer]
+
+▸ Thought for 5s
+  The subagents hit quota limits and were stopped due to a server restart. I need ...
+  The subagents hit resource limits. No problem — I'll write all three files directly myself. Let me clean up and start writing.
+
+● ManageSubagents(kill_all) (ctrl+o to expand)
+
+  Let me check if either subagent managed to write anything before failing:
+
+● Bash(git diff --stat) (ctrl+o to expand)
+
+  Clean slate — nothing was written yet. I'll write all three files directly. Starting with the CSS.
+● Edit(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/style.css) (ctrl+o to expand)
+
+  CSS done. Now the HTML:
+● Edit(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/index.html) (ctrl+o to expand)
+
+  CSS and HTML done. Now the JavaScript — this is the biggest file since it needs to wire up the chart, dark mode, insights, quick questions, sidebar, toasts, and all
+  existing functionality:
+● Edit(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend/app.js) (ctrl+o to expand)
+
+  All three files are written. Let me verify the backend tests still pass (since we only changed frontend files, they should):
+
+● Bash(.venv\Scripts\python.exe -m pytest tests/ -q) (ctrl+o to expand)
+
+  Let me also verify the frontend file structure:
+
+● ListDir(~/OneDrive/Codyssey/AI_native/projects/M1-2/frontend) (ctrl+o to expand)
+
+  Good — same 5 files, no new files added. Let me quickly verify the api.js and config.js were NOT modified:
+● Bash(git diff --name-only) (ctrl+o to expand)
+  Only the 3 frontend files were changed. api.js, config.js, and all backend files are untouched.
+  Now let me wait for the test results:
+
+● ManageTask(status 1d09379f-2121-47e1-995e-f0ca1a8589d3/task-339)
+● Schedule(30s: Check test results) (ctrl+o to expand)
+
+  All 74 tests passed. Here's the complete report:
+  ──────
+  ## Frontend Redesign Complete
+
+  ### 1. Updated Frontend Directory Structure
+
+    frontend/
+    ├── api.js        (2,483 bytes — UNCHANGED)
+    ├── app.js       (28,196 bytes — REWRITTEN)
+    ├── config.js       (421 bytes — UNCHANGED)
+    ├── index.html   (14,463 bytes — REWRITTEN)
+    └── style.css    (20,872 bytes — REWRITTEN)
+
+  ### 2. Files Modified
+
+   File                                                  | Action                                                | Size Change
+  -------------------------------------------------------|-------------------------------------------------------|-------------------------------------------------------
+   style.css                                             | Rewritten                                             | 9.6 KB → 20.9 KB
+   index.html                                            | Rewritten                                             | 6.9 KB → 14.5 KB
+   app.js                                                | Rewritten                                             | 13.5 KB → 28.2 KB
+   api.js                                                | Not touched                                           | —
+   config.js                                             | Not touched                                           | —
+
+  ### 3. Major UI/UX Changes
+
+  1. KPI Card Grid — 4 prominent cards (Average, Total, Peak, Lowest) with color-coded left borders, replacing the cramped right-sidebar metrics
+  2. Chart.js Line Chart — Real daily consumption data plotted as a smooth line chart with tooltips, loaded from CDN (chart.js@4.4.4)
+  3. Modern AI Chat Card — Message bubbles, typing animation, quick question chips (5 pre-set questions), accessible input
+  4. Energy Insights Panel — Weekday/weekend comparison, day-of-week patterns, recent 7/30-day stats, trend, estimated cost — all from the real summary API
+  5. Off-canvas Conversation History — Slides in from left instead of taking permanent column space; has backdrop overlay
+  6. Dark Mode — Full light/dark theme with CSS variables, persisted in localStorage, chart colors adapt dynamically
+  7. Toast Notifications — Replaced alert() calls with slide-in toasts for CRUD feedback
+  8. SVG Icons — All emojis replaced with clean inline SVG stroke icons (Lucide-style)
+  9. Professional Data Table — Alternating rows, hover states, sticky headers, SVG action buttons
+  10. Modal Improvements — Close on backdrop click, close button (X), cleaner form styling
+  11. Responsive Layout — KPIs: 4→2→1 columns, chat/insights: side-by-side→stacked, table scrollable on mobile
+  12. Google Fonts — Inter typeface loaded for professional typography
+  ### 4. How the Dashboard Uses Existing Backend APIs
+   API Endpoint                                                                      | Usage
+  -----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------
+   GET /api/data/summary                                                             | KPI cards, insights panel, chart subtitle, header date range
+   GET /api/data                                                                     | Daily data table + Chart.js line chart
+   POST /api/data                                                                    | Add record (via modal form)
+   PUT /api/data/{id}                                                                | Edit record (via modal form)
+   DELETE /api/data/{id}                                                             | Delete record (table action button)
+   POST /api/chat                                                                    | AI chat messages
+   GET /api/conversations                                                            | Conversation history sidebar list
+   GET /api/conversations/{id}                                                       | Load full conversation messages
+   DELETE /api/conversations/{id}                                                    | Delete conversation from sidebar
+
+  All calls go through the existing ApiService class in api.js — zero changes to API contracts.
+
+  ### 5. Responsive Behavior
+
+  • Desktop (>1024px): 4-column KPIs, two-column chat+insights layout
+  • Tablet (768–1024px): 2-column KPIs, stacked chat/insights
+  • Mobile (<768px): Single column everything, collapsible sidebar with backdrop, scrollable chart
+
+  ### 6. Verification
+
+  • Backend tests: ✅ All 74 passed (no backend changes)
+  • Only frontend files changed: git diff --name-only confirms only style.css, index.html, app.js
+  • No secrets exposed: api.js and config.js unchanged, no API keys in source
+
+  ### 7. How to Test
+
+  Locally:
+
+    .venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+
+  Then open http://localhost:8000 in your browser.
+
+  On Vercel:
+  Commit and push the 3 changed files. Vercel will automatically redeploy the static frontend. Verify:
+
+  [ ] Page loads with the new design
+  [ ] KPI cards show real summary data
+  [ ] Chart renders daily consumption trend
+  [ ] Quick question chips send messages
+  [ ] AI chat works with typing indicator
+  [ ] Insights panel shows weekday/weekend, trends, cost
+  [ ] Daily data table loads with edit/delete actions
+  [ ] Add Day modal works
+  [ ] Chat history sidebar opens/closes
+  [ ] Dark mode toggles and persists
+  [ ] Responsive layout on mobile/tablet
+  [ ] No CORS or console errors

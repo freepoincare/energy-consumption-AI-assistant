@@ -1,0 +1,146 @@
+1. "What is my average daily electricity consumption?"
+2. "Which day had my highest consumption?"
+3. "Which day had my lowest consumption?"
+4. "Which month did I use the most electricity?"
+5. "Do I use more electricity on weekdays or weekends?"
+6. "Which day of the week has the highest average consumption?"
+7. "Is my recent 7-day consumption higher than my overall average?"
+8. "Has my electricity consumption been increasing?"
+9. "What was my consumption on 2026-08-13?"
+10. "What was my electricity consumption on 2026-09-01?"
+
+-> already displayed on the webpage except for question 4.
+
+
+----
+
+Can't answer w/o Function Calling:
+
+- Why was my consumption on Sep 4, 2026 so high?
+- What was my average daily consumption during July 2026? 
+
+---
+
+Custom date-range analysis
+
+1. "What was my average consumption between April 1 and May 15, 2026?" o
+2. "How much electricity did I use between June 1 and June 15?"
+3. "What was my average daily consumption during July 2026?" 
+4. "How much did I consume during the first two weeks of August?" o
+5. "What was my highest consumption day between May 1 and June 30?" o
+6. "What was the lowest consumption between July 1 and July 31?"
+
+---
+
+Comparative questions
+
+7. "Did I use more electricity in April or May?"
+8. "Compare my electricity consumption in June and July."
+9. "Was my average daily consumption higher in April than in May?"
+10. "Compare the first half of May with the second half of May."
+11. "Was my consumption during August 1–15 higher than July 1–15?"
+12. "How much more electricity did I use in July compared with June?"
+13. "What was the percentage difference between my April and May consumption?"
+
+---
+
+"Why / explain" questions
+
+Your dashboard can show:
+
+May average: 9.4 kWh
+June average: 10.1 kWh
+
+But the user can ask:
+
+"Why was my consumption higher in June than May?"
+
+Now the AI can investigate the available data and explain possible patterns.
+
+For example:
+
+"Your average daily consumption increased by 7.4% in June. The increase was primarily associated with higher consumption on weekends, while weekday consumption remained relatively stable."
+
+Your dashboard can show:
+
+May average: 9.4 kWh
+June average: 10.1 kWh
+
+But the user can ask:
+
+"Why was my consumption higher in June than May?"
+
+Now the AI can investigate the available data and explain possible patterns.
+
+For example:
+
+"Your average daily consumption increased by 7.4% in June. The increase was primarily associated with higher consumption on weekends, while weekday consumption remained relatively stable."
+
+
+---
+
+Anomaly / unusual-period questions
+
+"Were there any unusual periods in my electricity consumption?"
+"Which days had unusually high consumption?"
+"Was my consumption on August 13 unusually high compared with nearby days?"
+"Did I have any unusually low-consumption periods?"
+"Which week had the most unusual consumption?"
+
+"How different was my highest-consumption day from my typical daily consumption?"
+
+---
+
+Multi-step / natural-language questions
+
+"How much electricity did I use during the first week of each month from April to August?"
+"Compare my average consumption on weekends during April, May, and June."
+"Which month had the highest weekend consumption?"
+"During which month was the difference between weekday and weekend consumption the largest?"
+"Compare my average consumption on Mondays in April and May."
+Did my electricity consumption increase between April and August?
+"How much did my average daily consumption change from April to August?"
+"Was the increase from April to August consistent, or did consumption fluctuate?"
+"When did my consumption start increasing?"
+"Compare my first 30 days with my most recent 30 days."
+"How much higher was my consumption on weekends in percentage terms?"
+"How much higher was my highest-consumption day than my average day?"
+"What percentage of my total electricity consumption occurred in July?"
+"How much did my consumption change from April to August?"
+"What percentage more electricity did I use on weekends than weekdays?"
+
+---
+
+Basic tool use
+"What was my electricity consumption on 2026-08-13?"
+→ get_energy_data_by_date
+"What was my average daily consumption from 2026-04-01 to 2026-05-15?"
+→ get_energy_data_by_period / statistics
+Custom statistics
+"What was my total electricity consumption during July 2026?"
+"What was the highest-consumption day between June 1 and July 15?"
+Comparisons
+"Did I use more electricity in April or May?"
+"Compare my average daily consumption in June and July."
+Percentage/change
+"How much did my average daily consumption change between April and August?"
+Pattern analysis
+"Which month had the largest difference between weekday and weekend consumption?"
+Anomaly
+"Was my consumption on 2026-08-13 unusually high compared with my average?"
+Multi-step natural language
+"Compare my electricity consumption during the first two weeks of April, May, June, July and August. Which period had the highest average?"
+
+That last one is excellent for demonstrating an AI agent/tool-use capability because the user doesn't specify how to perform the calculation. They just express the analytical question naturally.
+
+
+Dashboard
+
+"Here is what your electricity data looks like."
+
+AI assistant
+
+"Ask me to calculate, compare, investigate, or interpret your electricity data."
+
+
+
